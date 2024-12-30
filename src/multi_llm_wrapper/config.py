@@ -59,6 +59,15 @@ class AnthropicConfig(ProviderConfig):
         }
 
 @dataclass
+class GeminiConfig(ProviderConfig):
+    """Gemini-specific configuration"""
+    def __post_init__(self):
+        self.model_map = {
+            "gemini-1.5-flash": "gemini/gemini-1.5-flash",
+            "gemini-2.0-experimental": "gemini/gemini-2.0-experimental"
+        }
+
+@dataclass
 class WrapperConfig:
     """Main configuration class"""
     default_model: str = "claude-3-sonnet-20240229"
@@ -69,6 +78,7 @@ class WrapperConfig:
     openai: OpenAIConfig = field(default_factory=OpenAIConfig)
     groq: GroqConfig = field(default_factory=GroqConfig)
     perplexity: PerplexityConfig = field(default_factory=PerplexityConfig)
+    gemini: GeminiConfig = field(default_factory=GeminiConfig)
     
     def __post_init__(self):
         """Load environment variables and validate configuration"""
@@ -76,7 +86,8 @@ class WrapperConfig:
             os.getenv("ANTHROPIC_API_KEY"),
             os.getenv("OPENAI_API_KEY"),
             os.getenv("GROQ_API_KEY"),
-            os.getenv("PERPLEXITY_API_KEY")
+            os.getenv("PERPLEXITY_API_KEY"),
+            os.getenv("GEMINI_API_KEY")
         ]):
             load_dotenv()
             
@@ -86,6 +97,7 @@ class WrapperConfig:
         self.openai.organization_id = self.openai.organization_id or os.getenv("OPENAI_ORG_ID")
         self.groq.api_key = self.groq.api_key or os.getenv("GROQ_API_KEY")
         self.perplexity.api_key = self.perplexity.api_key or os.getenv("PERPLEXITY_API_KEY")
+        self.gemini.api_key = self.gemini.api_key or os.getenv("GEMINI_API_KEY")
         
         # Load global settings from environment if present
         self.default_model = os.getenv("DEFAULT_MODEL", self.default_model)
@@ -98,7 +110,8 @@ class WrapperConfig:
             "anthropic": self.anthropic,
             "openai": self.openai,
             "groq": self.groq,
-            "perplexity": self.perplexity
+            "perplexity": self.perplexity,
+            "gemini": self.gemini
         }
         
         if not provider_configs[self.default_provider].api_key:
@@ -113,7 +126,8 @@ class WrapperConfig:
             "openai": self.openai,
             "anthropic": self.anthropic,
             "groq": self.groq,
-            "perplexity": self.perplexity
+            "perplexity": self.perplexity,
+            "gemini": self.gemini
         }.items():
             if model in config.model_map:
                 return provider, config

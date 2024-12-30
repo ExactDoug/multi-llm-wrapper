@@ -103,7 +103,7 @@ async function sendQuery() {
     }
 
     try {
-        for (let i = 0; i < 8; i++) {
+        for (let i = 0; i < 9; i++) {
             startStream(i, query, currentSessionId);
         }
     } catch (error) {
@@ -328,10 +328,11 @@ function clearAllResponses() {
         4: 'Groq Mixtral',
         5: 'Groq LLaMA 3',
         6: 'Perplexity Sonar Small',
-        7: 'Perplexity Sonar Large'
+        7: 'Perplexity Sonar Large',
+        8: 'Google Gemini 1.5 Flash'
     };
 
-    for (let i = 0; i < 8; i++) {
+    for (let i = 0; i < 9; i++) {
         const contentElement = document.querySelector(`#llm-${i} .llm-content`);
         const titleElement = document.querySelector(`#llm-${i} .llm-title`);
 

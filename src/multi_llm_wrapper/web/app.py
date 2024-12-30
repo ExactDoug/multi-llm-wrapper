@@ -78,7 +78,8 @@ async def stream_llm_response(llm_index: int, query: str, session_id: str) -> As
             "mixtral-8x7b-32768",       # 4: Groq Mixtral
             "llama3-8b-8192",           # 5: Groq LLaMA 3
             "sonar-small",              # 6: Perplexity Sonar Small
-            "sonar-large"               # 7: Perplexity Sonar Large
+            "sonar-large",              # 7: Perplexity Sonar Large
+            "gemini-1.5-flash"         # 8: Google Gemini 1.5 Flash
         ]
         
         # Validate index and get model
@@ -145,7 +146,8 @@ async def stream_synthesis(session_id: str) -> AsyncGenerator[str, None]:
             "Groq Mixtral",
             "Groq LLaMA 3",
             "Perplexity Sonar Small",
-            "Perplexity Sonar Large"
+            "Perplexity Sonar Large",
+            "Google Gemini Pro"
         ]
         
         for idx, response in sorted(stored_responses['responses'].items()):
