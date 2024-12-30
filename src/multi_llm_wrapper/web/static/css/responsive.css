@@ -1,0 +1,200 @@
+/* Desktop Breakpoints */
+@media (max-width: 1600px) {
+    .llm-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 1200px) {
+    .llm-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* Mobile Styles */
+@media screen and (max-width: 768px) {
+    .container {
+        padding: 0.5rem;
+        gap: 0.5rem;
+    }
+
+    .top-section {
+        flex-direction: column;
+        gap: 0.5rem;
+        margin-bottom: 0;
+    }
+
+    .input-section,
+    .synthesizer-section {
+        max-width: 100%;
+        width: 100%;
+    }
+
+    .input-section {
+        height: 200px;
+    }
+
+    .input-section.collapsed {
+        height: 50px;
+        margin-bottom: 0;
+    }
+
+    .input-section.collapsed .section-content {
+        display: none;
+        opacity: 0;
+    }
+
+    #userInput {
+        min-height: 100px;
+        padding: 0.75rem;
+        font-size: 16px;
+    }
+
+    .synthesizer-section {
+        height: 600px;
+        margin-bottom: 0.5rem;
+    }
+
+    .synthesizer-content {
+        padding: 1rem;
+        font-size: 16px;
+        line-height: 1.5;
+    }
+
+    .llm-grid {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+        padding-top: 0.25rem;
+    }
+
+    .llm-window {
+        height: 180px;
+    }
+
+    .overlay {
+        padding: 0;
+    }
+
+    .expanded-window {
+        width: 100%;
+        height: 100vh;
+        margin: 0;
+        border-radius: 0;
+    }
+
+    .expanded-content {
+        padding: 1rem 1.25rem;
+        font-size: 16px;
+        line-height: 1.6;
+    }
+
+    /* Mobile Headers */
+    .section-header {
+        padding: 0.75rem;
+        position: sticky;
+        top: 0;
+        z-index: 1;
+    }
+
+    .header-buttons {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .section-content {
+        padding: 0.75rem;
+    }
+
+    /* Mobile Buttons */
+    #sendButton {
+        width: 100%;
+        min-width: unset;
+        padding: 0.75rem;
+        height: 44px;
+    }
+
+    .follow-up-btn {
+        display: block;
+        opacity: 0;
+        transform: translateY(10px);
+        transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+        margin: 0.5rem 0;
+        height: 44px;
+    }
+
+    .input-section.collapsed+.follow-up-btn {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    /* Ensure touch targets are large enough */
+    button {
+        min-width: 44px;
+        min-height: 44px;
+    }
+
+    /* Adjust content padding */
+    .llm-content,
+    .synthesizer-content,
+    .expanded-content {
+        padding: 0.75rem 1rem;
+    }
+
+    /* Ensure numbered lists are visible */
+    .markdown-body ol,
+    ul {
+        padding-left: 1.5rem;
+        margin-left: 0.25rem;
+    }
+}
+
+/* Small Mobile Devices */
+@media screen and (max-width: 390px) {
+    .synthesizer-section {
+        height: 650px;
+    }
+
+    .expanded-window {
+        width: 100vw;
+        height: 100vh;
+        position: fixed;
+        top: 0;
+        left: 0;
+    }
+}
+
+/* Landscape Mode */
+@media screen and (max-width: 768px) and (orientation: landscape) {
+    .input-section {
+        height: 150px;
+    }
+
+    .synthesizer-section {
+        height: 400px;
+    }
+
+    .llm-window {
+        height: 150px;
+    }
+}
+
+/* High DPI Screens */
+@media (-webkit-min-device-pixel-ratio: 2),
+(min-resolution: 192dpi) {
+
+    .markdown-body pre,
+    .markdown-body code {
+        -webkit-font-smoothing: antialiased;
+    }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}

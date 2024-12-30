@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#2563eb">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <title>Multi-LLM Interface</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='css/layout.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', path='css/components.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', path='css/animations.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', path='css/responsive.css') }}">
+</head>
+
+<body>
+    <div class="container">
+        <!-- Top Section with Input and Synthesis -->
+        <div class="top-section">
+            <!-- User Input Section -->
+            <div class="input-section" id="inputSection">
+                <div class="section-header">
+                    <h2>Query / Prompt</h2>
+                    <div class="header-buttons">
+                        <button class="expand-btn" onclick="expandWindow('query-input')"
+                            aria-label="Expand query view">🔍</button>
+                        <button class="toggle-btn" id="toggleInput" aria-label="Toggle input section">▼</button>
+                    </div>
+                </div>
+                <div class="section-content">
+                    <textarea id="userInput" placeholder="Enter your query here... (Press Shift+Enter for new line)"
+                        rows="6" aria-label="Query input"></textarea>
+                    <button id="sendButton">Send</button>
+                </div>
+            </div>
+
+            <!-- Master Synthesizer Section -->
+            <div class="synthesizer-section">
+                <div class="section-header">
+                    <h2>Master Synthesis</h2>
+                    <button class="expand-btn" onclick="expandWindow('master-synthesis')"
+                        aria-label="Expand synthesis view">🔍</button>
+                </div>
+                <div class="synthesizer-content markdown-body">
+                    <!-- Synthesized content will be populated via JavaScript -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Follow-up Button (hidden on desktop) -->
+        <button id="followUpBtn" class="follow-up-btn" aria-label="Ask follow-up question">
+            Ask Follow-up Question
+        </button>
+
+        <!-- LLM Windows Grid -->
+        <div class="llm-grid">
+            <!-- 8 LLM Windows -->
+            {% for i in range(8) %}
+            <div class="llm-window" id="llm-{{ i }}">
+                <div class="llm-header">
+                    <span class="llm-title">LLM {{ i + 1 }}</span>
+                    <button class="expand-btn" onclick="expandWindow('llm-{{ i }}')"
+                        aria-label="Expand LLM {{ i + 1 }} view">🔍</button>
+                </div>
+                <div class="llm-content markdown-body">
+                    <!-- Content will be populated via JavaScript -->
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Expanded Window Overlay -->
+    <div id="overlay" class="overlay">
+        <div class="expanded-window" role="dialog" aria-labelledby="expanded-title">
+            <div class="expanded-header">
+                <span class="expanded-title" id="expanded-title">LLM Response</span>
+                <button class="close-btn" onclick="closeExpanded()" aria-label="Close expanded view">×</button>
+            </div>
+            <div class="expanded-content markdown-body">
+                <!-- Expanded content will be populated via JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Load marked.js for Markdown rendering -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="{{ url_for('static', path='js/main.js') }}"></script>
+</body>
+
+</html>

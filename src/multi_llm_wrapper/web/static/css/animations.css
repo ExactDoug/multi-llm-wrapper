@@ -1,0 +1,98 @@
+/* Transitions */
+.llm-window {
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.llm-window:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 8px -2px rgb(0 0 0 / 0.1);
+}
+
+/* Expand/Collapse Animations */
+.input-section {
+    transition: height 0.3s ease-out;
+}
+
+.section-content {
+    transition: opacity 0.3s ease-out;
+}
+
+/* Button Animations */
+.toggle-btn {
+    transition: transform 0.3s ease-out;
+}
+
+.toggle-btn.collapsed {
+    transform: rotate(-90deg);
+}
+
+/* Overlay Animations */
+.overlay {
+    transition: opacity 0.3s ease-out;
+    opacity: 0;
+}
+
+.overlay.visible {
+    opacity: 1;
+    display: flex !important;
+}
+
+.expanded-window {
+    transition: transform 0.3s ease-out, opacity 0.3s ease-out;
+    transform: translateY(20px);
+    opacity: 0;
+}
+
+.overlay.visible .expanded-window {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+/* Loading Animation */
+.loading {
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+.loading::after {
+    content: "...";
+    animation: dots 1s steps(5, end) infinite;
+}
+
+@keyframes dots {
+
+    0%,
+    20% {
+        content: ".";
+    }
+
+    40% {
+        content: "..";
+    }
+
+    60%,
+    100% {
+        content: "...";
+    }
+}
+
+/* Mobile Animations */
+@media screen and (max-width: 768px) {
+    .follow-up-btn {
+        transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+    }
+
+    .input-section {
+        transition: all 0.3s ease-out;
+    }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
