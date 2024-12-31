@@ -24,7 +24,8 @@ class LLMWrapper:
             "openai": {"requests": 0, "tokens": 0},
             "anthropic": {"requests": 0, "tokens": 0},
             "groq": {"requests": 0, "tokens": 0},
-            "perplexity": {"requests": 0, "tokens": 0}
+            "perplexity": {"requests": 0, "tokens": 0},
+            "gemini": {"requests": 0, "tokens": 0}
         }
         
         # Track response times for monitoring
@@ -32,7 +33,8 @@ class LLMWrapper:
             "openai": [],
             "anthropic": [],
             "groq": [],
-            "perplexity": []
+            "perplexity": [],
+            "gemini": []
         }
     
     async def query(
@@ -87,6 +89,11 @@ class LLMWrapper:
                 request_kwargs["headers"] = {
                     "OpenAI-Organization": provider_config.organization_id
                 }
+            elif provider == "gemini":
+                # Gemini requires the API key to be passed as google_api_key
+                request_kwargs["google_api_key"] = provider_config.api_key
+                # Remove the default api_key parameter
+                request_kwargs.pop("api_key", None)
             
             logger.info(f"Sending query to {provider} model: {model} (streaming: {stream})")
             

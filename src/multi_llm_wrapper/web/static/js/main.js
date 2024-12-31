@@ -89,6 +89,24 @@ function generateUUID() {
     });
 }
 
+// Copy text to clipboard
+async function copyText(button) {
+    const section = button.closest('.llm-window, .synthesizer-section');
+    const contentDiv = section.querySelector('.markdown-body');
+    const textToCopy = contentDiv.textContent.trim();
+
+
+    try {
+        await navigator.clipboard.writeText(textToCopy);
+        button.textContent = '✅'; // Visual feedback: change icon
+        setTimeout(() => {
+            button.textContent = '📋'; // Reset icon after a short delay
+        }, 1000);
+    } catch (err) {
+        console.error('Failed to copy: ', err);
+    }
+}
+
 // Main query function
 async function sendQuery() {
     const query = userInput.value.trim();

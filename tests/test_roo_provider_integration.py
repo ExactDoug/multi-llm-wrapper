@@ -30,7 +30,7 @@ def test_configs():
 @pytest.fixture
 def mock_completion():
     mock = AsyncMock()
-    with patch('multi_llm_wrapper.wrapper.completion', mock):
+    with patch('litellm.acompletion', mock):
         yield mock
 
 @pytest.fixture

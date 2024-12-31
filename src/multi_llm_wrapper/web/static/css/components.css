@@ -133,9 +133,10 @@
     flex-direction: column;
 }
 
-/* Expand/Close Buttons */
+/* Expand/Close/Copy Buttons */
 .expand-btn,
-.close-btn {
+.close-btn,
+.copy-btn {
     background: none;
     border: none;
     cursor: pointer;
@@ -152,193 +153,195 @@
 }
 
 .expand-btn:hover,
-.close-btn:hover {
-    opacity: 1;
-}
+.close-btn:hover,
+.copy-btn:hover {
+    .close-btn:hover {
+        opacity: 1;
+    }
 
-/* Toggle Button */
-.toggle-btn {
-    background: none;
-    border: none;
-    cursor: pointer;
-    width: 44px;
-    height: 44px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--primary-color);
-    font-size: 1.25rem;
-    padding: 0;
-    opacity: 0.6;
-    transition: all 0.2s;
-}
+    /* Toggle Button */
+    .toggle-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        width: 44px;
+        height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--primary-color);
+        font-size: 1.25rem;
+        padding: 0;
+        opacity: 0.6;
+        transition: all 0.2s;
+    }
 
-.toggle-btn:hover {
-    opacity: 1;
-}
+    .toggle-btn:hover {
+        opacity: 1;
+    }
 
-/* Markdown Content */
-.markdown-body {
-    font-size: 0.9375rem;
-    line-height: 1.6;
-}
+    /* Markdown Content */
+    .markdown-body {
+        font-size: 0.9375rem;
+        line-height: 1.6;
+    }
 
-.markdown-body code {
-    background: #f1f5f9;
-    padding: 0.2em 0.4em;
-    border-radius: 0.25em;
-    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-    font-size: 0.9em;
-    max-width: 100%;
-    overflow-x: auto;
-    white-space: pre-wrap;
-    word-break: break-word;
-}
+    .markdown-body code {
+        background: #f1f5f9;
+        padding: 0.2em 0.4em;
+        border-radius: 0.25em;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        font-size: 0.9em;
+        max-width: 100%;
+        overflow-x: auto;
+        white-space: pre-wrap;
+        word-break: break-word;
+    }
 
-.markdown-body pre {
-    background: #f1f5f9;
-    padding: 0.75em;
-    border-radius: 0.5rem;
-    overflow-x: auto;
-    margin: 0.75em 0;
-    max-width: 100%;
-}
+    .markdown-body pre {
+        background: #f1f5f9;
+        padding: 0.75em;
+        border-radius: 0.5rem;
+        overflow-x: auto;
+        margin: 0.75em 0;
+        max-width: 100%;
+    }
 
-.markdown-body pre code {
-    background: none;
-    padding: 0;
-    border-radius: 0;
-    white-space: pre;
-    word-break: normal;
-    display: block;
-    min-height: 80px;
-    max-height: 500px;
-    overflow-y: auto;
-}
+    .markdown-body pre code {
+        background: none;
+        padding: 0;
+        border-radius: 0;
+        white-space: pre;
+        word-break: normal;
+        display: block;
+        min-height: 80px;
+        max-height: 500px;
+        overflow-y: auto;
+    }
 
-/* Ensure code blocks maintain visibility */
-.markdown-body pre {
-    position: relative;
-    min-height: 80px;
-    max-height: 500px;
-    overflow-y: auto;
-}
+    /* Ensure code blocks maintain visibility */
+    .markdown-body pre {
+        position: relative;
+        min-height: 80px;
+        max-height: 500px;
+        overflow-y: auto;
+    }
 
-/* Overlay */
-.overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.9);
-    z-index: 9999;
-    display: none;
-    align-items: center;
-    justify-content: center;
-}
+    /* Overlay */
+    .overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.9);
+        z-index: 9999;
+        display: none;
+        align-items: center;
+        justify-content: center;
+    }
 
-.expanded-window {
-    background: var(--window-bg);
-    border-radius: 0.75rem;
-    width: 90%;
-    max-width: 1200px;
-    height: 90vh;
-    display: flex;
-    flex-direction: column;
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-    position: relative;
-    z-index: 10000;
-    pointer-events: auto;
-    /* Ensure clicks are captured by the window */
-}
+    .expanded-window {
+        background: var(--window-bg);
+        border-radius: 0.75rem;
+        width: 90%;
+        max-width: 1200px;
+        height: 90vh;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        position: relative;
+        z-index: 10000;
+        pointer-events: auto;
+        /* Ensure clicks are captured by the window */
+    }
 
-/* Ensure overlay captures clicks but allows window interaction */
-.overlay {
-    pointer-events: auto;
-}
+    /* Ensure overlay captures clicks but allows window interaction */
+    .overlay {
+        pointer-events: auto;
+    }
 
-.expanded-header {
-    padding: 1.25rem 1.5rem;
-    border-bottom: 1px solid var(--border-color);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background-color: #f8fafc;
-    border-radius: 0.75rem 0.75rem 0 0;
-}
+    .expanded-header {
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid var(--border-color);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background-color: #f8fafc;
+        border-radius: 0.75rem 0.75rem 0 0;
+    }
 
-.expanded-title {
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: var(--text-color);
-}
+    .expanded-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--text-color);
+    }
 
-.expanded-content {
-    flex: 1;
-    overflow-y: auto;
-    padding: 1.5rem;
-    font-size: 1rem;
-    background-color: var(--window-bg);
-    -webkit-overflow-scrolling: touch;
-    overscroll-behavior: contain;
-    position: relative;
-    z-index: 10001;
-    /* Ensure content is above overlay */
-}
+    .expanded-content {
+        flex: 1;
+        overflow-y: auto;
+        padding: 1.5rem;
+        font-size: 1rem;
+        background-color: var(--window-bg);
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior: contain;
+        position: relative;
+        z-index: 10001;
+        /* Ensure content is above overlay */
+    }
 
-/* Ensure expanded query is fully interactive */
-.expanded-query {
-    position: relative;
-    z-index: 10001;
-    background-color: var(--window-bg);
-}
+    /* Ensure expanded query is fully interactive */
+    .expanded-query {
+        position: relative;
+        z-index: 10001;
+        background-color: var(--window-bg);
+    }
 
-/* Ensure expanded window buttons are clickable */
-.expanded-header button {
-    position: relative;
-    z-index: 10002;
-}
+    /* Ensure expanded window buttons are clickable */
+    .expanded-header button {
+        position: relative;
+        z-index: 10002;
+    }
 
-/* Scrollbar Styling */
-::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
-}
+    /* Scrollbar Styling */
+    ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
 
-::-webkit-scrollbar-track {
-    background: #f1f5f9;
-    border-radius: 4px;
-}
+    ::-webkit-scrollbar-track {
+        background: #f1f5f9;
+        border-radius: 4px;
+    }
 
-::-webkit-scrollbar-thumb {
-    background: #cbd5e1;
-    border-radius: 4px;
-}
+    ::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 4px;
+    }
 
-::-webkit-scrollbar-thumb:hover {
-    background: #94a3b8;
-}
+    ::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8;
+    }
 
-/* Mobile Follow-up Button */
-.follow-up-btn {
-    display: none;
-    width: 100%;
-    padding: 0.875rem;
-    background-color: var(--primary-color);
-    color: white;
-    border: none;
-    border-radius: 0.5rem;
-    cursor: pointer;
-    font-weight: 600;
-    margin: 1rem 0;
-    transition: all 0.2s;
-    box-shadow: 0 2px 4px rgba(37, 99, 235, 0.1);
-    min-height: 44px;
-}
+    /* Mobile Follow-up Button */
+    .follow-up-btn {
+        display: none;
+        width: 100%;
+        padding: 0.875rem;
+        background-color: var(--primary-color);
+        color: white;
+        border: none;
+        border-radius: 0.5rem;
+        cursor: pointer;
+        font-weight: 600;
+        margin: 1rem 0;
+        transition: all 0.2s;
+        box-shadow: 0 2px 4px rgba(37, 99, 235, 0.1);
+        min-height: 44px;
+    }
 
-.follow-up-btn:hover {
-    background-color: var(--secondary-color);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 6px rgba(37, 99, 235, 0.2);
-}
+    .follow-up-btn:hover {
+        background-color: var(--secondary-color);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 6px rgba(37, 99, 235, 0.2);
+    }

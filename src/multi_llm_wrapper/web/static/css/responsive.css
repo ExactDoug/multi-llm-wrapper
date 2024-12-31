@@ -129,7 +129,7 @@
     }
 
     /* Ensure touch targets are large enough */
-    button {
+    button:not(.copy-btn) {
         min-width: 44px;
         min-height: 44px;
     }
