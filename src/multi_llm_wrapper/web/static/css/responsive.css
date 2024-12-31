@@ -55,12 +55,6 @@
         margin-bottom: 0.5rem;
     }
 
-    .synthesizer-content {
-        padding: 1rem;
-        font-size: 16px;
-        line-height: 1.5;
-    }
-
     .llm-grid {
         grid-template-columns: 1fr;
         gap: 0.5rem;
@@ -80,12 +74,6 @@
         height: 100vh;
         margin: 0;
         border-radius: 0;
-    }
-
-    .expanded-content {
-        padding: 1rem 1.25rem;
-        font-size: 16px;
-        line-height: 1.6;
     }
 
     /* Mobile Headers */
@@ -118,7 +106,6 @@
         display: block;
         opacity: 0;
         transform: translateY(10px);
-        transition: opacity 0.3s ease-out, transform 0.3s ease-out;
         margin: 0.5rem 0;
         height: 44px;
     }
@@ -134,18 +121,23 @@
         min-height: 44px;
     }
 
-    /* Adjust content padding */
+    /* Mobile content adjustments */
+    .markdown-body {
+        font-size: 16px;
+        line-height: 1.5;
+    }
+    
+    .markdown-body ol,
+    .markdown-body ul {
+        padding-left: 1.5rem;
+        margin: 0.25rem 0;
+    }
+
     .llm-content,
     .synthesizer-content,
     .expanded-content {
         padding: 0.75rem 1rem;
-    }
-
-    /* Ensure numbered lists are visible */
-    .markdown-body ol,
-    ul {
-        padding-left: 1.5rem;
-        margin-left: 0.25rem;
+        font-size: 16px;
     }
 }
 
@@ -176,25 +168,5 @@
 
     .llm-window {
         height: 150px;
-    }
-}
-
-/* High DPI Screens */
-@media (-webkit-min-device-pixel-ratio: 2),
-(min-resolution: 192dpi) {
-
-    .markdown-body pre,
-    .markdown-body code {
-        -webkit-font-smoothing: antialiased;
-    }
-}
-
-/* Reduced Motion */
-@media (prefers-reduced-motion: reduce) {
-    * {
-        animation-duration: 0.01ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: 0.01ms !important;
-        scroll-behavior: auto !important;
     }
 }
