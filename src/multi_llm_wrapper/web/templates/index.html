@@ -24,8 +24,7 @@
                 <div class="section-header">
                     <h2>Query / Prompt</h2>
                     <div class="header-buttons">
-                        <button class="expand-btn" onclick="expandWindow('query-input')"
-                            aria-label="Expand query view">🔍</button>
+                        <button class="expand-btn" id="query-expand" aria-label="Expand query view">🔍</button>
                         <button class="toggle-btn" id="toggleInput" aria-label="Toggle input section">▼</button>
                     </div>
                 </div>
@@ -40,12 +39,11 @@
             <div class="synthesizer-section">
                 <div class="section-header">
                     <div class="title-wrapper">
-                        <button class="copy-btn" onclick="copyText(this)" title="Copy master synthesis"
+                        <button class="copy-btn" data-copy="synthesis" title="Copy master synthesis"
                             aria-label="Copy master synthesis">📋</button>
                         <h2>Master Synthesis</h2>
                     </div>
-                    <button class="expand-btn" onclick="expandWindow('master-synthesis')"
-                        aria-label="Expand synthesis view">🔍</button>
+                    <button class="expand-btn" id="synthesis-expand" aria-label="Expand synthesis view">🔍</button>
                 </div>
                 <div class="synthesizer-content markdown-body">
                     <!-- Synthesized content will be populated via JavaScript -->
@@ -65,12 +63,11 @@
             <div class="llm-window" id="llm-{{ i }}">
                 <div class="llm-header">
                     <div class="title-wrapper">
-                        <button class="copy-btn" onclick="copyText(this)" title="Copy LLM {{ i + 1 }} output"
+                        <button class="copy-btn" data-copy="llm-{{ i }}" title="Copy LLM {{ i + 1 }} output"
                             aria-label="Copy LLM {{ i + 1 }} output">📋</button>
                         <span class="llm-title">LLM {{ i + 1 }}</span>
                     </div>
-                    <button class="expand-btn" onclick="expandWindow('llm-{{ i }}')"
-                        aria-label="Expand LLM {{ i + 1 }} view">🔍</button>
+                    <button class="expand-btn" data-expand="llm-{{ i }}" aria-label="Expand LLM {{ i + 1 }} view">🔍</button>
                 </div>
                 <div class="llm-content markdown-body">
                     <!-- Content will be populated via JavaScript -->
@@ -85,7 +82,7 @@
         <div class="expanded-window" role="dialog" aria-labelledby="expanded-title">
             <div class="expanded-header">
                 <span class="expanded-title" id="expanded-title">LLM Response</span>
-                <button class="close-btn" onclick="closeExpanded()" aria-label="Close expanded view">×</button>
+                <button class="close-btn" id="close-expanded" aria-label="Close expanded view">×</button>
             </div>
             <div class="expanded-content markdown-body">
                 <!-- Expanded content will be populated via JavaScript -->
@@ -95,9 +92,8 @@
 
     <!-- Load marked.js for Markdown rendering -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <!-- Load main.js first since copy-button.js depends on its copyText function -->
-    <script src="{{ url_for('static', path='js/main.js') }}"></script>
-    <script src="{{ url_for('static', path='js/copy-button.js') }}"></script>
+    <!-- Load main.js as a module -->
+    <script type="module" src="{{ url_for('static', path='js/main.js') }}"></script>
 </body>
 
 </html>
