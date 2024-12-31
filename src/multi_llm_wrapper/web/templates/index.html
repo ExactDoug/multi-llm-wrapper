@@ -41,7 +41,7 @@
                 <div class="section-header">
                     <div class="title-wrapper">
                         <button class="copy-btn" onclick="copyText(this)" title="Copy master synthesis"
-                            aria-label="Copy master synthesis">📄</button>
+                            aria-label="Copy master synthesis">📋</button>
                         <h2>Master Synthesis</h2>
                     </div>
                     <button class="expand-btn" onclick="expandWindow('master-synthesis')"
@@ -66,7 +66,7 @@
                 <div class="llm-header">
                     <div class="title-wrapper">
                         <button class="copy-btn" onclick="copyText(this)" title="Copy LLM {{ i + 1 }} output"
-                            aria-label="Copy LLM {{ i + 1 }} output">📄</button>
+                            aria-label="Copy LLM {{ i + 1 }} output">📋</button>
                         <span class="llm-title">LLM {{ i + 1 }}</span>
                     </div>
                     <button class="expand-btn" onclick="expandWindow('llm-{{ i }}')"
@@ -96,6 +96,7 @@
     <!-- Load marked.js for Markdown rendering -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="{{ url_for('static', path='js/main.js') }}"></script>
+    <script src="{{ url_for('static', path='js/copy-button.js') }}"></script>
 </body>
 
 </html>
