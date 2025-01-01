@@ -1,40 +1,37 @@
-// Initialize marked for markdown rendering
-marked.setOptions({
-    breaks: true,
-    gfm: true,
-    headerIds: false
-});
-
-// Check content overflow and update UI accordingly
-export function checkContentOverflow(element) {
-    const hasHorizontalOverflow = element.scrollWidth > element.clientWidth;
-    element.classList.toggle('has-overflow', hasHorizontalOverflow);
-}
-
 // Update content with markdown parsing
 export function updateContent(element, content, expandedContent = null) {
-    element.innerHTML = marked.parse(content);
-    element.scrollTop = element.scrollHeight;
-    checkContentOverflow(element);
-
-    if (expandedContent) {
-        expandedContent.innerHTML = marked.parse(content);
-        checkContentOverflow(expandedContent);
+    if (!element) {
+        console.warn('No element provided to updateContent');
+        return;
     }
+
+    // Store raw markdown for copy functionality and update content
+    element.setAttribute('data-markdown', content);
+    element.innerHTML = marked.parse(content);
+
+    // Handle expanded content if present
+    if (expandedContent) {
+        expandedContent.setAttribute('data-markdown', content);
+        expandedContent.innerHTML = marked.parse(content);
+    }
+
+    // Get the parent container for scrolling
+    const container = element.closest('.llm-content, .synthesizer-content');
+    if (container) {
+        container.scrollTop = container.scrollHeight;
+        checkContentOverflow(container);
+    }
+
+    // Also check overflow on the element itself
+    checkContentOverflow(element);
 }
 
-// Handle errors in streams
-export function handleStreamError(error, contentElement, eventSource, callback) {
-    console.error('Stream error:', error);
-    if (contentElement) {
-        contentElement.innerHTML = marked.parse(`Error: ${error.message || 'Unknown error'}`);
-    }
-    if (eventSource) {
-        eventSource.close();
-    }
-    if (callback) {
-        callback();
-    }
+// Check if content overflows and add class if needed
+export function checkContentOverflow(element) {
+    if (!element) return;
+
+    const hasOverflow = element.scrollHeight > element.clientHeight;
+    element.classList.toggle('has-overflow', hasOverflow);
 }
 
 // Parse SSE data
@@ -47,11 +44,26 @@ export function parseSSEData(data) {
     }
 }
 
-// Create URL with parameters
-export function createStreamUrl(baseUrl, params) {
-    const url = new URL(baseUrl, window.location.origin);
+// Create stream URL with query parameters
+export function createStreamUrl(endpoint, params) {
+    const url = new URL(endpoint, window.location.origin);
     Object.entries(params).forEach(([key, value]) => {
         url.searchParams.append(key, value);
     });
     return url.toString();
+}
+
+// Handle stream errors
+export function handleStreamError(error, contentElement, eventSource, cleanup) {
+    console.error('Stream error:', error);
+    if (contentElement) {
+        const errorMessage = error.message || 'An error occurred while processing your request.';
+        contentElement.innerHTML = `<div class="error-message">${errorMessage}</div>`;
+    }
+    if (eventSource) {
+        eventSource.close();
+    }
+    if (cleanup) {
+        cleanup();
+    }
 }

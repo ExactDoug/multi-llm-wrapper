@@ -1,3 +1,11 @@
+/* Title group styling */
+.llm-title-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+}
+
 /* Section Headers */
 .section-header {
     padding: 1rem 1.5rem;
@@ -11,9 +19,10 @@
 
 .section-header h2,
 .llm-title {
+    margin: 0;
     font-size: 1.125rem;
     font-weight: 600;
-    color: var(--primary-color);
+    color: var(--text-color);
     display: flex;
     align-items: center;
 }
@@ -108,16 +117,23 @@
     border-radius: 0.5rem 0.5rem 0 0;
 }
 
-/*.llm-title {
-    font-weight: 600;
-    color: var(--text-color);
-} */
-
 /* Content Areas */
 .llm-content,
 .synthesizer-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--window-bg);
+    overflow: hidden;
+    /* Change to hidden to prevent double scrollbars */
+}
+
+/* Markdown Content */
+.markdown-body {
+    flex: 1;
     padding: 1.25rem;
     font-size: 0.9375rem;
+    line-height: 1.6;
     background-color: var(--window-bg);
     overflow-y: auto;
     overflow-x: auto;
@@ -137,19 +153,18 @@
 .expand-btn,
 .close-btn,
 .copy-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 24px;
+    height: 24px;
+    padding: 4px;
+    margin: 0;
     background: none;
     border: none;
     cursor: pointer;
-    width: 44px;
-    height: 44px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--text-color);
-    font-size: 1.25rem;
-    padding: 0;
     opacity: 0.6;
-    transition: opacity 0.2s;
+    transition: all 0.2s;
     position: relative;
     z-index: 2;
 }
@@ -158,6 +173,8 @@
 .close-btn:hover,
 .copy-btn:hover {
     opacity: 1;
+    background-color: rgba(0, 0, 0, 0.05);
+    border-radius: 4px;
 }
 
 /* Toggle Button */
@@ -179,12 +196,6 @@
 
 .toggle-btn:hover {
     opacity: 1;
-}
-
-/* Markdown Content */
-.markdown-body {
-    font-size: 0.9375rem;
-    line-height: 1.6;
 }
 
 .markdown-body ol,
