@@ -156,14 +156,17 @@ async def stream_synthesis(session_id: str) -> AsyncGenerator[str, None]:
         
         synthesis_prompt += "\nProvide a comprehensive yet concise synthesis that:\n"
         synthesis_prompt += "1. Merges all responses into a single response that directly addresses the user's original query\n"
-        synthesis_prompt += "2. Presents the response as though from a single SME with access to a broader and more nuanced knowledgebase than any 1 LLM would have\n"
+        synthesis_prompt += "2. Presents the response as though from a single SME (subject matter expert) with access to a broader and more nuanced knowledgebase than any 1 LLM would have\n"
         synthesis_prompt += "3. Preserves all unique (or possibly unique) details, including more nuanced details\n"
         synthesis_prompt += "4. For more-nuanced or minority details, presents them as such, in order to not give overconfidence in a detail that is seemingly less common, though potentially could still be highly-beneficial\n"
-        synthesis_prompt += "5. If the request/prompt is for research, coding, development, etc.: Identifies key agreements and disagreements\n"
-        synthesis_prompt += "6. If there are conflicting responses (discrepancies), rather than omitting these, present these details accordingly in a clear intuitive way"
+        synthesis_prompt += "5. If the request/prompt is for research, coding or development: Identifies key agreements and disagreements\n"
+        synthesis_prompt += "6. If there are conflicting responses (discrepancies), rather than omitting these, present these details accordingly in a clear intuitive way\n"
         synthesis_prompt += "7. Is as concise as possible, while still being incredibly useful and high-value, and adhering to the above requirements\n"
         synthesis_prompt += "8. Uses/preserves markdown as/when appropriate\n"
         synthesis_prompt += "9. Preserves links and/or references to various sources so the user is able to go verify the answers themselves\n"
+        synthesis_prompt += "10. Attempt to respond to the user in such a way that would be appropriate based on their request (while utilizing the additional information from the other LLMs in an appropriate way)\n"
+        synthesis_prompt += "11. Respect the user's requested answer format. If they say 'be brief' or 'be concise', give them a brief/concise response while still utilizing all the aggregated knowledge sources to the extent possible\n"
+        synthesis_prompt += "12. If any LLMs diverge from the requested format, you are not obligated to represent them in their entirety. Although we want you to incorporate and consider the information they add, we don't want this to cause the user to no longer receive the type of response they are requesting (in terms of the format of the response)\n"
 
         # synthesis_prompt += "3. Evaluates the strengths of each response\n"
         

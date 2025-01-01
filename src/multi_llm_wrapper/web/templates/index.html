@@ -38,11 +38,11 @@
             <!-- Master Synthesizer Section -->
             <div class="synthesizer-section">
                 <div class="section-header">
-                    <div class="title-wrapper">
+                    <h2>
                         <button class="copy-btn" data-copy="synthesis" title="Copy master synthesis"
                             aria-label="Copy master synthesis">📋</button>
-                        <h2>Master Synthesis</h2>
-                    </div>
+                        Master Synthesis
+                    </h2>
                     <button class="expand-btn" id="synthesis-expand" aria-label="Expand synthesis view">🔍</button>
                 </div>
                 <div class="synthesizer-content markdown-body">
@@ -62,12 +62,13 @@
             {% for i in range(9) %}
             <div class="llm-window" id="llm-{{ i }}">
                 <div class="llm-header">
-                    <div class="title-wrapper">
+                    <h2 class="llm-title">
                         <button class="copy-btn" data-copy="llm-{{ i }}" title="Copy LLM {{ i + 1 }} output"
                             aria-label="Copy LLM {{ i + 1 }} output">📋</button>
-                        <span class="llm-title">LLM {{ i + 1 }}</span>
-                    </div>
-                    <button class="expand-btn" data-expand="llm-{{ i }}" aria-label="Expand LLM {{ i + 1 }} view">🔍</button>
+                        LLM {{ i + 1 }}
+                    </h2>
+                    <button class="expand-btn" data-expand="llm-{{ i }}"
+                        aria-label="Expand LLM {{ i + 1 }} view">🔍</button>
                 </div>
                 <div class="llm-content markdown-body">
                     <!-- Content will be populated via JavaScript -->

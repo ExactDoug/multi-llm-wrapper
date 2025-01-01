@@ -9,13 +9,13 @@
     align-items: center;
 }
 
-.section-header h2 {
+.section-header h2,
+.llm-title {
     font-size: 1.125rem;
     font-weight: 600;
     color: var(--primary-color);
     display: flex;
     align-items: center;
-    gap: 0.5rem;
 }
 
 .header-buttons {
@@ -108,10 +108,10 @@
     border-radius: 0.5rem 0.5rem 0 0;
 }
 
-.llm-title {
+/*.llm-title {
     font-weight: 600;
     color: var(--text-color);
-}
+} */
 
 /* Content Areas */
 .llm-content,
