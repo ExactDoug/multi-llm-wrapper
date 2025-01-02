@@ -30,21 +30,43 @@ export function toggleInput(collapse) {
 
 // Copy text to clipboard with mobile support
 export async function copyText(button) {
-    const section = button.closest('.llm-window, .synthesizer-section');
-    const contentDiv = section.querySelector('.markdown-body');
-    const textToCopy = contentDiv.textContent.trim();
+    // Find the closest container first
+    const container = button.closest('.llm-window, .synthesizer-section');
+    if (!container) {
+        console.error('No container found for copy button');
+        return;
+    }
+
+    // Find the markdown-body element
+    const markdownBody = container.querySelector('.markdown-body');
+    if (!markdownBody) {
+        console.error('No markdown-body found in container');
+        return;
+    }
+
+    // Get the content, preferring the stored markdown
+    const textToCopy = markdownBody.getAttribute('data-markdown') || markdownBody.textContent.trim();
+    if (!textToCopy) {
+        console.error('No content found to copy');
+        return;
+    }
 
     try {
-        // Try modern clipboard API first
         if (navigator.clipboard && window.isSecureContext) {
             await navigator.clipboard.writeText(textToCopy);
+            showCopyFeedback(button, true);
         } else {
             // Fallback for iOS
             const textArea = document.createElement('textarea');
             textArea.value = textToCopy;
-            textArea.style.position = 'fixed';
-            textArea.style.left = '-999999px';
-            textArea.style.top = '-999999px';
+
+            // Make the textarea invisible
+            Object.assign(textArea.style, {
+                position: 'fixed',
+                left: '-999999px',
+                top: '-999999px'
+            });
+
             document.body.appendChild(textArea);
             textArea.focus();
             textArea.select();
@@ -52,41 +74,39 @@ export async function copyText(button) {
             try {
                 document.execCommand('copy');
                 textArea.blur();
+                showCopyFeedback(button, true);
             } catch (err) {
-                console.error('Fallback: Oops, unable to copy', err);
+                console.error('Fallback: Copy failed', err);
+                showCopyFeedback(button, false);
+            } finally {
+                document.body.removeChild(textArea);
             }
-
-            document.body.removeChild(textArea);
         }
-
-        // Visual feedback
-        const originalText = button.textContent;
-        button.textContent = '✅';
-        button.style.transform = 'scale(1.2)';
-        button.style.transition = 'transform 0.15s ease-in-out';
-
-        // Add touch feedback for mobile
-        button.style.opacity = '0.7';
-        button.style.backgroundColor = 'rgba(0, 255, 0, 0.1)';
-
-        setTimeout(() => {
-            button.textContent = originalText;
-            button.style.transform = 'scale(1)';
-            button.style.opacity = '1';
-            button.style.backgroundColor = 'transparent';
-        }, 1000);
     } catch (err) {
-        console.error('Failed to copy: ', err);
-        // Show error feedback
-        const originalText = button.textContent;
-        button.textContent = '❌';
-        button.style.backgroundColor = 'rgba(255, 0, 0, 0.1)';
-        
-        setTimeout(() => {
-            button.textContent = originalText;
-            button.style.backgroundColor = 'transparent';
-        }, 1000);
+        console.error('Copy failed:', err);
+        showCopyFeedback(button, false);
     }
+}
+
+// Helper function for copy feedback
+function showCopyFeedback(button, success) {
+    const originalText = button.textContent;
+    const originalBg = button.style.backgroundColor;
+
+    // Update button appearance
+    button.textContent = success ? '✅' : '❌';
+    button.style.transform = 'scale(1.2)';
+    button.style.transition = 'transform 0.15s ease-in-out';
+    button.style.backgroundColor = success ?
+        'rgba(0, 255, 0, 0.1)' :
+        'rgba(255, 0, 0, 0.1)';
+
+    // Reset after animation
+    setTimeout(() => {
+        button.textContent = originalText;
+        button.style.transform = 'scale(1)';
+        button.style.backgroundColor = originalBg;
+    }, 1000);
 }
 
 // Set loading state

@@ -53,6 +53,10 @@ export function expandWindow(windowId) {
     state.expandedWindow = windowId;
     elements.overlay.style.display = 'flex';
 
+    // Set the source information for proper status updates
+    const expandedWindow = document.querySelector('.expanded-window');
+    expandedWindow.setAttribute('data-source', windowId);
+
     requestAnimationFrame(() => {
         elements.overlay.classList.add('visible');
         document.body.style.overflow = 'hidden';

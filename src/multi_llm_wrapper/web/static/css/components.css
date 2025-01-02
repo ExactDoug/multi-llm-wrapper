@@ -131,12 +131,57 @@
 /* Markdown Content */
 .markdown-body {
     flex: 1;
+    min-height: 100px;
+    /* Ensure there's always visible space */
     padding: 1.25rem;
     font-size: 0.9375rem;
     line-height: 1.6;
     background-color: var(--window-bg);
     overflow-y: auto;
     overflow-x: auto;
+    max-width: 100%;
+}
+
+/* Table Styles */
+.markdown-body table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 1rem 0;
+    font-size: 0.9375rem;
+    line-height: 1.6;
+    border: 1px solid var(--border-color);
+    display: inline-table;
+    min-width: 100%;
+    max-width: fit-content;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.markdown-body th {
+    background-color: #f8fafc;
+    font-weight: 600;
+    text-align: left;
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    padding: 0.75rem 1rem;
+}
+
+.markdown-body td {
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--border-color);
+    vertical-align: top;
+}
+
+.markdown-body tr:nth-child(even) {
+    background-color: #f8fafc;
+}
+
+/* Maintain table header visibility during scroll */
+.markdown-body thead {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background-color: #f8fafc;
 }
 
 /* Synthesizer Section */
@@ -347,4 +392,35 @@
     margin: 1rem 0;
     transition: all 0.2s;
     box-shadow: 0 2px 4px rgba(37, 99, 235, 0.1);
+}
+
+/* Ensure synthesizer content has reasonable minimum height on mobile */
+@media (max-width: 768px) {
+    .synthesizer-section {
+        flex: 1;
+        /* Allow section to grow */
+        min-height: 300px;
+        /* Increase minimum height */
+        max-height: 50vh;
+        /* Limit maximum height on mobile */
+    }
+
+    .synthesizer-section .synthesizer-content {
+        min-height: 250px;
+        /* Increase from 200px */
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+        /* Allow content to grow */
+    }
+
+    .synthesizer-section .synthesizer-content .markdown-body {
+        flex: 1;
+        min-height: 200px;
+        /* Increase from 150px */
+        overflow-y: auto;
+        padding: 1rem;
+        -webkit-overflow-scrolling: touch;
+        /* Smooth scrolling on iOS */
+    }
 }

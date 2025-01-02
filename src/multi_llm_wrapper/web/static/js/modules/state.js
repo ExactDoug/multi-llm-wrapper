@@ -1,18 +1,24 @@
 import { checkContentOverflow } from './utils.js';
+import { llmTitles, initializeStatusTracking } from './status.js';
 
 // Global state management
 export const state = {
     activeStreams: new Map(), // Track active SSE connections
     expandedWindow: null, // Track currently expanded window
     isInputCollapsed: false, // Track input section state
-    currentSessionId: null // Track current session ID
+    currentSessionId: null, // Track current session ID
+    llmStatus: {} // Track LLM completion status
 };
 
-// Reset session state
+export function initializeStatus() {
+    state.llmStatus = initializeStatusTracking();
+}
+
 export function resetSession() {
     state.currentSessionId = null;
     closeAllStreams();
     clearAllResponses();
+    initializeStatus();
 }
 
 // Close all active streams
@@ -23,18 +29,6 @@ export function closeAllStreams() {
 
 // Clear all response content
 export function clearAllResponses() {
-    const llmTitles = {
-        0: 'Claude 3 Opus',
-        1: 'Claude 3 Sonnet',
-        2: 'GPT-4',
-        3: 'GPT-3.5 Turbo',
-        4: 'Groq Mixtral',
-        5: 'Groq LLaMA 3',
-        6: 'Perplexity Sonar Small',
-        7: 'Perplexity Sonar Large',
-        8: 'Google Gemini 1.5 Flash'
-    };
-
     for (let i = 0; i < 9; i++) {
         const contentElement = document.querySelector(`#llm-${i} .llm-content`);
         const titleElement = document.querySelector(`#llm-${i} .llm-title`);

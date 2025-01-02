@@ -1,6 +1,7 @@
 import { state, resetSession, generateUUID } from './state.js';
 import { setLoading, toggleInput } from './ui.js';
 import { updateContent, handleStreamError, parseSSEData, createStreamUrl, checkContentOverflow } from './utils.js';
+import { updateStatusDisplay, initializeStatusTracking } from './status.js';
 import {
     logLLMWindowSearch,
     logLLMWindowHTML,
@@ -68,6 +69,13 @@ export function startStream(llmIndex, query, sessionId) {
 
     const streamTimeout = setTimeout(() => {
         logStreamTimeout(llmIndex);
+        if (!state.llmStatus[llmIndex]) {
+            state.llmStatus[llmIndex] = {
+                complete: false,
+                startTime: Date.now()
+            };
+        }
+        state.llmStatus[llmIndex].complete = true;
         eventSource.close();
         state.activeStreams.delete(llmIndex);
         checkAllStreamsComplete();
@@ -89,9 +97,23 @@ export function startStream(llmIndex, query, sessionId) {
                 clearTimeout(streamTimeout);
                 eventSource.close();
                 state.activeStreams.delete(llmIndex);
+                if (!state.llmStatus[llmIndex]) {
+                    state.llmStatus[llmIndex] = {
+                        complete: false,
+                        startTime: Date.now()
+                    };
+                }
+                state.llmStatus[llmIndex].complete = true;
                 checkAllStreamsComplete();
             } else if (data.type === 'error') {
                 clearTimeout(streamTimeout);
+                if (!state.llmStatus[llmIndex]) {
+                    state.llmStatus[llmIndex] = {
+                        complete: false,
+                        startTime: Date.now()
+                    };
+                }
+                state.llmStatus[llmIndex].complete = true;
                 handleStreamError(
                     { message: data.message },
                     contentElement,
@@ -104,6 +126,13 @@ export function startStream(llmIndex, query, sessionId) {
             }
         } catch (error) {
             clearTimeout(streamTimeout);
+            if (!state.llmStatus[llmIndex]) {
+                state.llmStatus[llmIndex] = {
+                    complete: false,
+                    startTime: Date.now()
+                };
+            }
+            state.llmStatus[llmIndex].complete = true;
             handleStreamError(
                 error,
                 contentElement,
@@ -117,6 +146,13 @@ export function startStream(llmIndex, query, sessionId) {
     };
 
     eventSource.onerror = (error) => {
+        if (!state.llmStatus[llmIndex]) {
+            state.llmStatus[llmIndex] = {
+                complete: false,
+                startTime: Date.now()
+            };
+        }
+        state.llmStatus[llmIndex].complete = true;
         handleStreamError(
             error,
             contentElement,
@@ -162,8 +198,6 @@ export function startSynthesis(sessionId) {
 
     logMarkdownBody(synthesizerContent);
 
-    updateContent(synthesizerContent, '');
-
     const eventSource = new EventSource(`/synthesize/${sessionId}`);
     let accumulatedText = '';
 
@@ -173,6 +207,9 @@ export function startSynthesis(sessionId) {
             if (!data) return;
 
             if (data.type === 'content' && data.content) {
+                if (!accumulatedText) {  // Only clear on first content
+                    updateContent(synthesizerContent, '');
+                }
                 accumulatedText += data.content;
                 const expandedContent = state.expandedWindow === 'master-synthesis' ?
                     document.querySelector('.expanded-window > .expanded-content > .markdown-body') : null;
@@ -210,7 +247,21 @@ export function startSynthesis(sessionId) {
 
 // Check if all streams are complete
 function checkAllStreamsComplete() {
+    // Ensure all LLMs have a status
+    for (let i = 0; i < 9; i++) {
+        if (!state.llmStatus[i]) {
+            state.llmStatus[i] = {
+                complete: false,
+                startTime: Date.now()
+            };
+        }
+    }
+
+    // Update status display before checking completion
+    updateStatusDisplay(state.llmStatus);
+
     if (state.activeStreams.size === 0 && state.currentSessionId) {
+        // All streams are complete, start synthesis
         startSynthesis(state.currentSessionId);
     }
 }
@@ -222,8 +273,12 @@ export async function sendQuery() {
     if (!query) return;
 
     setLoading(true);
-    resetSession();
+    resetSession();  // This now includes proper status reset
     state.currentSessionId = generateUUID();
+
+    // Initialize status tracking for new query
+    state.llmStatus = initializeStatusTracking();
+    updateStatusDisplay(state.llmStatus);  // Show initial status
 
     if (window.innerWidth <= 768) {
         toggleInput(true);

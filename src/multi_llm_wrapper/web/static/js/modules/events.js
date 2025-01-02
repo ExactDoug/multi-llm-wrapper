@@ -67,7 +67,7 @@ function initializeCopyButtons() {
 function initializeExpandButtons() {
     // Get all expand buttons
     const expandButtons = document.querySelectorAll('.expand-btn');
-    
+
     expandButtons.forEach(button => {
         // For buttons with data-expand attribute
         const windowId = button.getAttribute('data-expand');
