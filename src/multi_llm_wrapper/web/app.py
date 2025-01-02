@@ -127,7 +127,7 @@ async def stream_endpoint(
     )
 
 async def stream_synthesis(session_id: str) -> AsyncGenerator[str, None]:
-    """Stream the synthesis of all LLM responses using Claude."""
+    """Stream the synthesis of all LLM responses using Groq LLaMA 3."""
     try:
         # Get stored responses for the session
         stored_responses = response_store.get_responses(session_id)
@@ -173,7 +173,7 @@ async def stream_synthesis(session_id: str) -> AsyncGenerator[str, None]:
         # Get the stream generator
         stream = await wrapper.query(
             synthesis_prompt,
-            model="claude-3-sonnet-20240229",
+            model="llama3-8b-8192",
             stream=True
         )
         
