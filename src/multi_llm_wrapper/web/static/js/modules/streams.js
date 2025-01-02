@@ -1,12 +1,21 @@
 import { state, resetSession, generateUUID } from './state.js';
 import { setLoading, toggleInput } from './ui.js';
 import { updateContent, handleStreamError, parseSSEData, createStreamUrl, checkContentOverflow } from './utils.js';
+import {
+    logLLMWindowSearch,
+    logLLMWindowHTML,
+    logContentStructure,
+    logMarkdownBody,
+    logStreamTimeout,
+    logSynthesizerSearch,
+    logError
+} from './streams-debug.js';
 
 // Ensure content structure exists
 function ensureContentStructure(llmWindow) {
     const llmContent = llmWindow.querySelector('.llm-content');
     if (!llmContent) {
-        console.warn('llm-content div not found, creating...');
+        logContentStructure('llm-content', false);
         const newContent = document.createElement('div');
         newContent.className = 'llm-content';
         llmWindow.appendChild(newContent);
@@ -14,7 +23,7 @@ function ensureContentStructure(llmWindow) {
 
     let markdownBody = llmContent.querySelector('.markdown-body');
     if (!markdownBody) {
-        console.warn('markdown-body div not found, creating...');
+        logContentStructure('markdown-body', false);
         markdownBody = document.createElement('div');
         markdownBody.className = 'markdown-body';
         llmContent.appendChild(markdownBody);
@@ -32,23 +41,18 @@ function updateLLMTitle(llmIndex, newTitle) {
 
 // Start SSE stream for an LLM
 export function startStream(llmIndex, query, sessionId) {
-    console.log(`Trying to find content element for LLM ${llmIndex}`);
+    logLLMWindowSearch(llmIndex);
 
-    // Debug the LLM window
     const llmWindow = document.querySelector(`#llm-${llmIndex}`);
-    console.log(`LLM window ${llmIndex} HTML:`, llmWindow?.innerHTML);
+    logLLMWindowHTML(llmIndex, llmWindow?.innerHTML);
 
     if (!llmWindow) {
-        console.error(`LLM window ${llmIndex} not found`);
+        logError(`LLM window ${llmIndex} not found`);
         return;
     }
 
-    // Ensure content structure exists
     const contentElement = ensureContentStructure(llmWindow);
-    console.log(`Markdown body found/created:`, contentElement);
-    if (contentElement) {
-        console.log(`Markdown body HTML:`, contentElement.innerHTML);
-    }
+    logMarkdownBody(contentElement);
 
     updateContent(contentElement, '');
 
@@ -63,7 +67,7 @@ export function startStream(llmIndex, query, sessionId) {
     let accumulatedText = '';
 
     const streamTimeout = setTimeout(() => {
-        console.log(`[LLM ${llmIndex}] Stream timeout`);
+        logStreamTimeout(llmIndex);
         eventSource.close();
         state.activeStreams.delete(llmIndex);
         checkAllStreamsComplete();
@@ -128,36 +132,35 @@ export function startStream(llmIndex, query, sessionId) {
 // Start synthesis stream
 export function startSynthesis(sessionId) {
     if (!sessionId) {
-        console.error('No session ID available for synthesis');
+        logError('No session ID available for synthesis');
         setLoading(false);
         return;
     }
 
-    console.log('Looking for synthesizer content');
+    logSynthesizerSearch();
     const synthesizer = document.querySelector('.synthesizer-section');
     if (!synthesizer) {
-        console.error('Synthesizer section not found');
+        logError('Synthesizer section not found');
         setLoading(false);
         return;
     }
 
     const synthContent = synthesizer.querySelector('.synthesizer-content');
     if (!synthContent) {
-        console.error('Synthesizer content not found');
+        logError('Synthesizer content not found');
         setLoading(false);
         return;
     }
 
     let synthesizerContent = synthContent.querySelector('.markdown-body');
     if (!synthesizerContent) {
-        console.warn('Synthesizer markdown-body not found, creating...');
+        logContentStructure('Synthesizer markdown-body', false);
         synthesizerContent = document.createElement('div');
         synthesizerContent.className = 'markdown-body';
         synthContent.appendChild(synthesizerContent);
     }
 
-    console.log('Synthesizer markdown body found/created:', synthesizerContent);
-    console.log('Synthesizer markdown body HTML:', synthesizerContent.innerHTML);
+    logMarkdownBody(synthesizerContent);
 
     updateContent(synthesizerContent, '');
 
@@ -231,7 +234,7 @@ export async function sendQuery() {
             startStream(i, query, state.currentSessionId);
         }
     } catch (error) {
-        console.error('Error starting streams:', error);
+        logError(`Error starting streams: ${error}`);
         setLoading(false);
     }
 }
