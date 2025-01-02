@@ -23,10 +23,11 @@ export function updateStatusDisplay(statuses) {
         Object.entries(statuses || {}).forEach(([index, status]) => {
             const icon = status?.complete ? '✓' : '⟳';
             const statusText = status?.complete ? 'Complete' : 'In Progress';
-            statusHTML += `* ${icon} ${llmTitles[index] || `LLM ${parseInt(index) + 1}`} - ${statusText}\n`;
+            // Add explicit line breaks after each status
+            statusHTML += `${icon} ${llmTitles[index] || `LLM ${parseInt(index) + 1}`} - ${statusText}\n\n`;
         });
 
-        statusHTML += '\n*Synthesis will begin once all responses are received.*\n';
+        statusHTML += '*Synthesis will begin once all responses are received.*\n';
 
         try {
             element.innerHTML = marked.parse(statusHTML);
@@ -50,9 +51,10 @@ export function updateStatusDisplay(statuses) {
         }
     }
 
-    // Update expanded view if it exists
-    const expandedContent = document.querySelector('.expanded-window .expanded-content');
-    if (expandedContent && expandedContent.closest('.expanded-window').getAttribute('data-source') === 'master-synthesis') {
+    // Ensure expanded view gets the same updates
+    const expandedWindow = document.querySelector('.expanded-window');
+    const expandedContent = expandedWindow?.querySelector('.expanded-content');
+    if (expandedContent && expandedWindow.getAttribute('data-source') === 'master-synthesis') {
         let expandedMarkdownBody = expandedContent.querySelector('.markdown-body');
         if (!expandedMarkdownBody) {
             expandedMarkdownBody = document.createElement('div');
