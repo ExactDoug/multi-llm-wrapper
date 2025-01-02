@@ -1,5 +1,5 @@
 from fastapi import FastAPI, Request, Query, HTTPException
-from fastapi.responses import HTMLResponse, StreamingResponse
+from fastapi.responses import HTMLResponse, StreamingResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from pathlib import Path
@@ -64,6 +64,19 @@ response_store = ResponseStore()
 async def root(request: Request):
     """Serve the main web interface."""
     return templates.TemplateResponse("index.html", {"request": request})
+
+@app.get('/favicon.ico')
+async def favicon():
+    """Serve favicon.ico from static directory."""
+    return FileResponse(static_dir / 'favicon.ico')
+
+@app.get('/apple-touch-icon{suffix:path}.png')
+async def apple_touch_icon(suffix: str = ""):
+    """Serve apple-touch-icon.png files with fallback."""
+    # Try specific file first, then fall back to default
+    specific_file = static_dir / f'apple-touch-icon{suffix}.png'
+    default_file = static_dir / 'apple-touch-icon.png'
+    return FileResponse(specific_file if specific_file.exists() else default_file)
 
 async def stream_llm_response(llm_index: int, query: str, session_id: str) -> AsyncGenerator[str, None]:
     """Stream responses from a specific LLM."""

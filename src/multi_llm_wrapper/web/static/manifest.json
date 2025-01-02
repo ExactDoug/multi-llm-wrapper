@@ -1,0 +1,24 @@
+{
+    "name": "Multi-LLM Interface",
+    "icons": [
+        {
+            "src": "/static/favicon.ico",
+            "sizes": "64x64 32x32 24x24 16x16",
+            "type": "image/x-icon"
+        },
+        {
+            "src": "/static/apple-touch-icon.png",
+            "sizes": "180x180",
+            "type": "image/png"
+        },
+        {
+            "src": "/static/apple-touch-icon-120x120.png",
+            "sizes": "120x120",
+            "type": "image/png"
+        }
+    ],
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#2563eb"
+}
