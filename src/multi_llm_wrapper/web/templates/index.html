@@ -13,6 +13,7 @@
     <link rel="stylesheet" href="{{ url_for('static', path='css/components.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', path='css/animations.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', path='css/responsive.css') }}">
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', path='favicon.ico') }}">
 </head>
 
 <body>
@@ -38,15 +39,19 @@
             <!-- Master Synthesizer Section -->
             <div class="synthesizer-section">
                 <div class="section-header">
-                    <h2>
+                    <div class="llm-title-group">
                         <button class="copy-btn" data-copy="synthesis" title="Copy master synthesis"
                             aria-label="Copy master synthesis">📋</button>
-                        Master Synthesis
-                    </h2>
+                        <h2 class="llm-title">
+                            <span class="title-text">Master Synthesis</span>
+                        </h2>
+                    </div>
                     <button class="expand-btn" id="synthesis-expand" aria-label="Expand synthesis view">🔍</button>
                 </div>
-                <div class="synthesizer-content markdown-body">
-                    <!-- Synthesized content will be populated via JavaScript -->
+                <div class="synthesizer-content">
+                    <div class="markdown-body">
+                        <!-- Synthesized content will be populated via JavaScript -->
+                    </div>
                 </div>
             </div>
         </div>
@@ -62,16 +67,20 @@
             {% for i in range(9) %}
             <div class="llm-window" id="llm-{{ i }}">
                 <div class="llm-header">
-                    <h2 class="llm-title">
+                    <div class="llm-title-group">
                         <button class="copy-btn" data-copy="llm-{{ i }}" title="Copy LLM {{ i + 1 }} output"
                             aria-label="Copy LLM {{ i + 1 }} output">📋</button>
-                        LLM {{ i + 1 }}
-                    </h2>
+                        <h2 class="llm-title">
+                            <span class="title-text">LLM {{ i + 1 }}</span>
+                        </h2>
+                    </div>
                     <button class="expand-btn" data-expand="llm-{{ i }}"
                         aria-label="Expand LLM {{ i + 1 }} view">🔍</button>
                 </div>
-                <div class="llm-content markdown-body">
-                    <!-- Content will be populated via JavaScript -->
+                <div class="llm-content">
+                    <div class="markdown-body">
+                        <!-- Content will be populated via JavaScript -->
+                    </div>
                 </div>
             </div>
             {% endfor %}
