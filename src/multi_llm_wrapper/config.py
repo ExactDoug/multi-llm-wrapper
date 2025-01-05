@@ -2,6 +2,7 @@ from typing import Dict, Any, Optional
 from dataclasses import dataclass, field
 import os
 from dotenv import load_dotenv
+from .config_types import BraveSearchConfig as BraveConfig
 
 @dataclass
 class ProviderConfig:
@@ -79,6 +80,7 @@ class WrapperConfig:
     groq: GroqConfig = field(default_factory=GroqConfig)
     perplexity: PerplexityConfig = field(default_factory=PerplexityConfig)
     gemini: GeminiConfig = field(default_factory=GeminiConfig)
+    brave_search: BraveConfig = field(default_factory=lambda: BraveConfig(api_key=None))
     
     def __post_init__(self):
         """Load environment variables and validate configuration"""
@@ -87,7 +89,8 @@ class WrapperConfig:
             os.getenv("OPENAI_API_KEY"),
             os.getenv("GROQ_API_KEY"),
             os.getenv("PERPLEXITY_API_KEY"),
-            os.getenv("GEMINI_API_KEY")
+            os.getenv("GEMINI_API_KEY"),
+            os.getenv("BRAVE_SEARCH_API_KEY")
         ]):
             load_dotenv()
             
@@ -98,6 +101,7 @@ class WrapperConfig:
         self.groq.api_key = self.groq.api_key or os.getenv("GROQ_API_KEY")
         self.perplexity.api_key = self.perplexity.api_key or os.getenv("PERPLEXITY_API_KEY")
         self.gemini.api_key = self.gemini.api_key or os.getenv("GEMINI_API_KEY")
+        self.brave_search.api_key = self.brave_search.api_key or os.getenv("BRAVE_SEARCH_API_KEY")
         
         # Load global settings from environment if present
         self.default_model = os.getenv("DEFAULT_MODEL", self.default_model)
@@ -111,7 +115,8 @@ class WrapperConfig:
             "openai": self.openai,
             "groq": self.groq,
             "perplexity": self.perplexity,
-            "gemini": self.gemini
+            "gemini": self.gemini,
+            "brave_search": self.brave_search
         }
         
         if not provider_configs[self.default_provider].api_key:
@@ -127,7 +132,8 @@ class WrapperConfig:
             "anthropic": self.anthropic,
             "groq": self.groq,
             "perplexity": self.perplexity,
-            "gemini": self.gemini
+            "gemini": self.gemini,
+            "brave_search": self.brave_search
         }.items():
             if model in config.model_map:
                 return provider, config

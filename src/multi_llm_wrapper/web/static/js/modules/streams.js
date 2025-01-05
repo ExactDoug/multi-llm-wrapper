@@ -247,8 +247,8 @@ export function startSynthesis(sessionId) {
 
 // Check if all streams are complete
 function checkAllStreamsComplete() {
-    // Ensure all LLMs have a status
-    for (let i = 0; i < 9; i++) {
+    // Ensure all LLMs and Brave Search have a status
+    for (let i = 0; i < 10; i++) {
         if (!state.llmStatus[i]) {
             state.llmStatus[i] = {
                 complete: false,
@@ -285,7 +285,7 @@ export async function sendQuery() {
     }
 
     try {
-        for (let i = 0; i < 9; i++) {
+        for (let i = 0; i < 10; i++) {
             startStream(i, query, state.currentSessionId);
         }
     } catch (error) {

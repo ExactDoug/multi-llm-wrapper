@@ -1,4 +1,10 @@
 /* Desktop Breakpoints */
+@media (max-width: 1920px) {
+    .llm-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
 @media (max-width: 1600px) {
     .llm-grid {
         grid-template-columns: repeat(3, 1fr);
@@ -126,7 +132,7 @@
         font-size: 16px;
         line-height: 1.5;
     }
-    
+
     .markdown-body ol,
     .markdown-body ul {
         padding-left: 1.5rem;
