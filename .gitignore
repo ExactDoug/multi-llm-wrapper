@@ -20,19 +20,56 @@ wheels/
 .installed.cfg
 *.egg
 
-# Environment
-.env
-.venv
-env/
+# Virtual Environment
 venv/
 ENV/
+env/
+.env
 
 # IDE
 .idea/
 .vscode/
 *.swp
 *.swo
+*~
+
+# Azure
+.azure/
+azure-settings.json
+*.publishsettings
+
+# Testing
+.coverage
+htmlcov/
+.pytest_cache/
+.mypy_cache/
+.tox/
+coverage.xml
+*.cover
+.hypothesis/
+
+# Logs
+*.log
+logs/
+log/
 
 # OS
 .DS_Store
 Thumbs.db
+
+# Project specific
+temp_search_results.txt
+temp_summary.md
+
+# Documentation
+_build/
+_static/
+_templates/
+
+# Secrets
+*.pem
+*.key
+*.crt
+*.cer
+*.p12
+*.pfx

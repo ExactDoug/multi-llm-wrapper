@@ -53,7 +53,8 @@ class LLMService:
                 "sonar-small",              # 6: Perplexity Sonar Small
                 "sonar-large",              # 7: Perplexity Sonar Large
                 "gemini-1.5-flash",         # 8: Google Gemini 1.5 Flash
-                "brave_search"              # 9: Brave Search
+                "brave_search",              # 9: Brave Search
+                "groq_proxy/llama2-70b-8192" # 10: Groq Proxy Llama2
             ]
             
             # Validate index and get model

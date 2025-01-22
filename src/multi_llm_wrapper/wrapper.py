@@ -158,7 +158,19 @@ class LLMWrapper:
                 request_kwargs["google_api_key"] = provider_config.api_key
                 # Remove the default api_key parameter
                 request_kwargs.pop("api_key", None)
-            
+            elif provider == "groq_proxy":
+                # Use litellm's acompletion with the proxy's base URL
+                response = await acompletion(
+                    base_url=provider_config.base_url,
+                    **request_kwargs
+                )
+                return self._format_complete_response(
+                    response=response,
+                    provider=provider,
+                    model=model,
+                    start_time=start_time
+                )
+
             logger.info(f"Sending query to {provider} model: {model} (streaming: {stream})")
             
             if stream:

@@ -1,0 +1,103 @@
+C:\Users\dmortensen\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.12_qbz5n2kfra8p0\LocalCache\local-packages\Python312\site-packages\pytest_asyncio\plugin.py:207: PytestDeprecationWarning: The configuration option "asyncio_default_fixture_loop_scope" is unset.
+The event loop scope for asynchronous fixtures will default to the fixture caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to function scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: "function", "class", "module", "package", "session"
+
+  warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))
+============================= test session starts =============================
+platform win32 -- Python 3.12.8, pytest-8.3.4, pluggy-1.5.0 -- C:\Users\dmortensen\AppData\Local\Microsoft\WindowsApps\PythonSoftwareFoundation.Python.3.12_qbz5n2kfra8p0\python.exe
+cachedir: .pytest_cache
+rootdir: c:\dev\od-dm-y\OneDrive\dev-projects\multi-llm-wrapper
+plugins: anyio-4.7.0, asyncio-0.25.0, cov-6.0.0, requests-mock-1.12.1
+asyncio: mode=Mode.STRICT, asyncio_default_fixture_loop_scope=None
+collecting ... collected 13 items
+
+tests/test_wrapper.py::test_basic_query ERROR                            [  7%]
+tests/test_wrapper.py::test_error_handling PASSED                        [ 15%]
+tests/test_wrapper.py::test_wrapper_configuration PASSED                 [ 23%]
+tests/test_wrapper.py::test_wrapper_comprehensive PASSED                 [ 30%]
+tests/test_wrapper.py::test_successful_query ERROR                       [ 38%]
+tests/test_wrapper.py::test_query_timeout FAILED                         [ 46%]
+tests/test_wrapper.py::test_default_config PASSED                        [ 53%]
+tests/test_wrapper.py::test_custom_config FAILED                         [ 61%]
+tests/test_wrapper.py::test_response_format_validation ERROR             [ 69%]
+tests/test_wrapper.py::test_empty_prompt PASSED                          [ 76%]
+tests/test_wrapper.py::test_invalid_model PASSED                         [ 84%]
+tests/test_wrapper.py::test_missing_api_key FAILED                       [ 92%]
+tests/test_wrapper.py::test_groq_proxy_query FAILED                      [100%]
+
+=================================== ERRORS ====================================
+_____________________ ERROR at setup of test_basic_query ______________________
+tests\test_wrapper.py:56: in mock_completion
+    with patch('multi_llm_wrapper.wrapper.completion', mock):
+C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.12_3.12.2288.0_x64__qbz5n2kfra8p0\Lib\unittest\mock.py:1467: in __enter__
+    original, local = self.get_original()
+C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.12_3.12.2288.0_x64__qbz5n2kfra8p0\Lib\unittest\mock.py:1437: in get_original
+    raise AttributeError(
+E   AttributeError: <module 'multi_llm_wrapper.wrapper' from 'c:\\dev\\od-dm-y\\OneDrive\\dev-projects\\multi-llm-wrapper\\src\\multi_llm_wrapper\\wrapper.py'> does not have the attribute 'completion'
+___________________ ERROR at setup of test_successful_query ___________________
+tests\test_wrapper.py:56: in mock_completion
+    with patch('multi_llm_wrapper.wrapper.completion', mock):
+C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.12_3.12.2288.0_x64__qbz5n2kfra8p0\Lib\unittest\mock.py:1467: in __enter__
+    original, local = self.get_original()
+C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.12_3.12.2288.0_x64__qbz5n2kfra8p0\Lib\unittest\mock.py:1437: in get_original
+    raise AttributeError(
+E   AttributeError: <module 'multi_llm_wrapper.wrapper' from 'c:\\dev\\od-dm-y\\OneDrive\\dev-projects\\multi-llm-wrapper\\src\\multi_llm_wrapper\\wrapper.py'> does not have the attribute 'completion'
+______________ ERROR at setup of test_response_format_validation ______________
+tests\test_wrapper.py:56: in mock_completion
+    with patch('multi_llm_wrapper.wrapper.completion', mock):
+C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.12_3.12.2288.0_x64__qbz5n2kfra8p0\Lib\unittest\mock.py:1467: in __enter__
+    original, local = self.get_original()
+C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.12_3.12.2288.0_x64__qbz5n2kfra8p0\Lib\unittest\mock.py:1437: in get_original
+    raise AttributeError(
+E   AttributeError: <module 'multi_llm_wrapper.wrapper' from 'c:\\dev\\od-dm-y\\OneDrive\\dev-projects\\multi-llm-wrapper\\src\\multi_llm_wrapper\\wrapper.py'> does not have the attribute 'completion'
+================================== FAILURES ===================================
+_____________________________ test_query_timeout ______________________________
+tests\test_wrapper.py:107: in test_query_timeout
+    with patch('multi_llm_wrapper.wrapper.completion', AsyncMock(side_effect=mock_timeout)):
+C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.12_3.12.2288.0_x64__qbz5n2kfra8p0\Lib\unittest\mock.py:1467: in __enter__
+    original, local = self.get_original()
+C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.12_3.12.2288.0_x64__qbz5n2kfra8p0\Lib\unittest\mock.py:1437: in get_original
+    raise AttributeError(
+E   AttributeError: <module 'multi_llm_wrapper.wrapper' from 'c:\\dev\\od-dm-y\\OneDrive\\dev-projects\\multi-llm-wrapper\\src\\multi_llm_wrapper\\wrapper.py'> does not have the attribute 'completion'
+_____________________________ test_custom_config ______________________________
+tests\test_wrapper.py:129: in test_custom_config
+    assert wrapper.config.default_model == "gpt-4"
+E   AssertionError: assert 'claude-3-sonnet-20240229' == 'gpt-4'
+E     
+E     - gpt-4
+E     + claude-3-sonnet-20240229
+____________________________ test_missing_api_key _____________________________
+tests\test_wrapper.py:159: in test_missing_api_key
+    config = TestConfig()  # This will have api_key=None
+<string>:15: in __init__
+    ???
+src\multi_llm_wrapper\config.py:134: in __post_init__
+    raise ValueError(f"{self.default_provider.capitalize()} API key not found in environment or configuration")
+E   ValueError: Anthropic API key not found in environment or configuration
+____________________________ test_groq_proxy_query ____________________________
+tests\test_wrapper.py:167: in test_groq_proxy_query
+    assert response["status"] == "success"
+E   AssertionError: assert 'error' == 'success'
+E     
+E     - success
+E     + error
+------------------------------ Captured log call ------------------------------
+ERROR    multi_llm_wrapper.wrapper:wrapper.py:211 Query failed: AttributeError: 'BraveSearchConfig' object has no attribute 'model_map'
+============================== warnings summary ===============================
+..\..\..\..\..\Users\dmortensen\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.12_qbz5n2kfra8p0\LocalCache\local-packages\Python312\site-packages\litellm\utils.py:146
+  C:\Users\dmortensen\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.12_qbz5n2kfra8p0\LocalCache\local-packages\Python312\site-packages\litellm\utils.py:146: DeprecationWarning: open_text is deprecated. Use files() instead. Refer to https://importlib-resources.readthedocs.io/en/latest/using.html#migrating-from-legacy for migration advice.
+    with resources.open_text(
+
+tests\test_wrapper.py:22
+  c:\dev\od-dm-y\OneDrive\dev-projects\multi-llm-wrapper\tests\test_wrapper.py:22: PytestCollectionWarning: cannot collect test class 'TestConfig' because it has a __init__ constructor (from: tests/test_wrapper.py)
+    @dataclass
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/test_wrapper.py::test_query_timeout - AttributeError: <module 'm...
+FAILED tests/test_wrapper.py::test_custom_config - AssertionError: assert 'cl...
+FAILED tests/test_wrapper.py::test_missing_api_key - ValueError: Anthropic AP...
+FAILED tests/test_wrapper.py::test_groq_proxy_query - AssertionError: assert ...
+ERROR tests/test_wrapper.py::test_basic_query - AttributeError: <module 'mult...
+ERROR tests/test_wrapper.py::test_successful_query - AttributeError: <module ...
+ERROR tests/test_wrapper.py::test_response_format_validation - AttributeError...
+============== 4 failed, 6 passed, 2 warnings, 3 errors in 4.89s ==============

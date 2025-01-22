@@ -1,119 +1,128 @@
-# Multi-LLM Wrapper
+# Brave Search Knowledge Aggregator
 
-A lightweight, extensible Python wrapper for interacting with multiple Large Language Models (LLMs) through a unified interface. This project aims to simplify the integration and usage of various LLM providers while maintaining a consistent API.
+A sophisticated component for the multi-llm-wrapper project that enhances search capabilities by intelligently processing and synthesizing web search results.
 
 ## Features
 
-- Unified interface for multiple LLM providers
-- Async support for efficient processing
-- Standardized response format
-- Built-in error handling and logging
-- Simple configuration system
-- Provider-agnostic design
+- Intelligent query analysis and optimization
+- Efficient content fetching with rate limiting
+- Advanced knowledge synthesis
+- Azure integration with enterprise security
+- Comprehensive monitoring and logging
 
-## Quick Start
+## Installation
 
-### Installation
-
-1. Clone the repository:
 ```bash
-git clone [repository-url]
-cd multi-llm-wrapper
+pip install -e .
 ```
 
-2. Create and activate a virtual environment:
+For development:
 ```bash
-python -m venv venv
-source venv/bin/activate  # or venv\Scripts\activate on Windows
-```
-
-3. Install dependencies:
-```bash
-pip install -r requirements.txt
-```
-
-4. Set up your environment variables:
-```bash
-export ANTHROPIC_API_KEY=your_key_here
-export OPENAI_API_KEY=your_key_here  # if using OpenAI models
-```
-
-### Basic Usage
-
-```python
-import asyncio
-from multi_llm_wrapper import LLMWrapper
-
-async def main():
-    wrapper = LLMWrapper()
-    
-    response = await wrapper.query(
-        "Explain how to make a peanut butter sandwich."
-    )
-    
-    print(f"Response: {response['content']}")
-
-if __name__ == "__main__":
-    asyncio.run(main())
+pip install -e ".[dev]"
 ```
 
 ## Configuration
 
-The wrapper can be configured using the `WrapperConfig` class:
+1. Create a `.env` file:
+```bash
+cp .env.example .env
+```
+
+2. Configure environment variables:
+```plaintext
+BRAVE_API_KEY=your_api_key_here
+MAX_RESULTS_PER_QUERY=20
+TIMEOUT_SECONDS=30
+RATE_LIMIT=20
+```
+
+3. Azure configuration (if using Azure deployment):
+```plaintext
+AZURE_CLIENT_ID=your_client_id
+AZURE_CLIENT_SECRET=your_client_secret
+AZURE_TENANT_ID=your_tenant_id
+```
+
+## Usage
 
 ```python
-from multi_llm_wrapper import WrapperConfig
+from brave_search_aggregator import BraveSearchAggregator
 
-config = WrapperConfig(
-    default_model="claude-3-sonnet-20240229",
-    default_provider="anthropic",
-    timeout_seconds=30,
-    max_retries=2
-)
+# Initialize the aggregator
+aggregator = BraveSearchAggregator()
 
-wrapper = LLMWrapper(config=config)
+# Process a query
+result = await aggregator.process_query("latest developments in AI")
+
+# Access the synthesized response
+print(result.content)
+
+# Access references
+for ref in result.references:
+    print(f"[{ref.index}] {ref.title}: {ref.url}")
 ```
 
-## Running Tests
+## Development
 
+1. Set up development environment:
 ```bash
-pytest tests/
+python -m venv venv
+source venv/bin/activate  # or venv\Scripts\activate on Windows
+pip install -e ".[dev]"
 ```
 
-## Project Structure
-
-```
-multi_llm_wrapper/
-├── src/
-│   ├── __init__.py
-│   ├── wrapper.py      # Core wrapper implementation
-│   ├── config.py       # Configuration
-│   └── utils.py        # Helper utilities
-├── tests/
-│   ├── __init__.py
-│   └── test_wrapper.py # Tests
-├── examples/
-│   └── basic_usage.py  # Usage examples
-├── README.md
-├── requirements.txt
-└── setup.py
+2. Run tests:
+```bash
+pytest
 ```
 
-## Current Status
+3. Run linting:
+```bash
+pylint src/brave_search_aggregator
+```
 
-This is the initial implementation with basic functionality. Future enhancements will include:
+4. Run type checking:
+```bash
+mypy src/brave_search_aggregator
+```
 
-- Additional provider integrations
-- Response synthesis capabilities
-- Advanced error recovery
-- Comprehensive monitoring
-- Caching and optimization
-- Load balancing and failover
+## Documentation
 
-## License
+- [Architecture Overview](docs/brave-dev/knowledge-aggregator/architecture.md)
+- [Implementation Guide](docs/brave-dev/knowledge-aggregator/implementation.md)
+- [Configuration Guide](docs/brave-dev/knowledge-aggregator/configuration.md)
 
-[Specify your license]
+## Azure Deployment
+
+1. Create Azure resources:
+```bash
+az webapp create \
+    --resource-group apps-rg \
+    --plan <app-service-plan> \
+    --name brave-search-aggregator \
+    --runtime "PYTHON:3.11"
+```
+
+2. Configure environment variables:
+```bash
+az webapp config appsettings set \
+    --name brave-search-aggregator \
+    --resource-group apps-rg \
+    --settings @azure-settings.json
+```
 
 ## Contributing
 
-[Add contribution guidelines]
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Run tests
+5. Submit a pull request
+
+## License
+
+MIT License - see LICENSE file for details.
+
+## Authors
+
+- Exact Technology Partners (dmortensen@exactpartners.com)

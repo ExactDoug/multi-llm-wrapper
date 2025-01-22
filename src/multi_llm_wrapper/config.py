@@ -69,6 +69,15 @@ class GeminiConfig(ProviderConfig):
         }
 
 @dataclass
+class GroqProxyConfig(ProviderConfig):
+    """Configuration for the Groq proxy server"""
+    base_url: str = "http://localhost:8000"  # Default proxy URL
+    def __post_init__(self):
+        self.model_map = {
+            "llama2-70b-8192": "llama2-70b-8192" # Maps internal model name to proxy's expected model name, can be the same
+        }
+
+@dataclass
 class WrapperConfig:
     """Main configuration class"""
     default_model: str = "claude-3-sonnet-20240229"
@@ -78,6 +87,7 @@ class WrapperConfig:
     anthropic: AnthropicConfig = field(default_factory=AnthropicConfig)
     openai: OpenAIConfig = field(default_factory=OpenAIConfig)
     groq: GroqConfig = field(default_factory=GroqConfig)
+    groq_proxy: GroqProxyConfig = field(default_factory=GroqProxyConfig)
     perplexity: PerplexityConfig = field(default_factory=PerplexityConfig)
     gemini: GeminiConfig = field(default_factory=GeminiConfig)
     brave_search: BraveConfig = field(default_factory=lambda: BraveConfig(api_key=None))
@@ -114,6 +124,7 @@ class WrapperConfig:
             "anthropic": self.anthropic,
             "openai": self.openai,
             "groq": self.groq,
+            "gro_proxy": self.groq_proxy,
             "perplexity": self.perplexity,
             "gemini": self.gemini,
             "brave_search": self.brave_search
@@ -125,21 +136,37 @@ class WrapperConfig:
     def get_provider_config(self, model: Optional[str] = None) -> tuple[str, ProviderConfig]:
         """Get provider and configuration based on model"""
         model = model or self.default_model
-        
+
+        # Check if the model string starts with the provider name
+        if model.startswith("openai/"):
+            return "openai", self.openai
+        elif model.startswith("anthropic/"):
+            return "anthropic", self.anthropic
+        elif model.startswith("groq/"):
+            return "groq", self.groq
+        elif model.startswith("groq_proxy/"):
+            return "groq_proxy", self.groq_proxy
+        elif model.startswith("perplexity/"):
+            return "perplexity", self.perplexity
+        elif model.startswith("gemini/"):
+            return "gemini", self.gemini
+        elif model.startswith("brave_search/"):
+            return "brave_search", self.brave_search
+
         # Check each provider's model map
         for provider, config in {
             "openai": self.openai,
             "anthropic": self.anthropic,
             "groq": self.groq,
+            "groq_proxy": self.groq_proxy,
             "perplexity": self.perplexity,
             "gemini": self.gemini,
             "brave_search": self.brave_search
         }.items():
             if model in config.model_map:
                 return provider, config
-                
-        raise ValueError(f"Unsupported model: {model}")
 
+        raise ValueError(f"Unsupported model: {model}")
 # Create a function to get default config instead of a module-level instance
 def get_default_config() -> WrapperConfig:
     return WrapperConfig()

@@ -66,6 +66,43 @@ async def synthesize_endpoint(session_id: str):
         media_type="text/event-stream"
     )
 
+from litellm import acompletion
+
+@app.post("/groq/v1/completions")
+async def groq_completions(request: Request):
+    try:
+        data = await request.json()
+        response = await acompletion(
+            model="groq/llama2-70b-8192",
+            messages=data["messages"],
+            temperature=data.get("temperature"),
+            max_tokens=data.get("max_tokens"),
+            base_url="http://localhost:8001" # Assuming the Groq proxy runs on port 8001
+        )
+        
+        # Format the response to match OpenAI's structure
+        formatted_response = {
+            "id": "cmpl-" + str(uuid4()),
+            "object": "text_completion",
+            "created": int(response['created']),
+            "choices": [
+                {
+                    "text": response['choices'][0]['message']['content'],
+                    "index": 0,
+                    "logprobs": None,
+                    "finish_reason": response['choices'][0]['finish_reason']
+                }
+            ],
+            "usage": {
+                "prompt_tokens": response['usage']['prompt_tokens'],
+                "completion_tokens": response['usage']['completion_tokens'],
+                "total_tokens": response['usage']['total_tokens']
+            }
+        }
+        return formatted_response
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)

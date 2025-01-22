@@ -1,4 +1,6 @@
 import pytest
+
+from src.multi_llm_wrapper.config import WrapperConfig
 import os
 import asyncio
 from unittest.mock import patch, MagicMock, AsyncMock
@@ -159,4 +161,19 @@ async def test_missing_api_key():
             config = TestConfig()  # This will have api_key=None
             with pytest.raises(ValueError) as exc_info:
                 wrapper = LLMWrapper(config=config)
+
+@pytest.mark.asyncio
+
+@pytest.mark.asyncio
+async def test_groq_proxy_query():
+    config = WrapperConfig(
+        default_model="llama3-70b-8192",
+        default_provider="groq_proxy",
+        groq_proxy=GroqProxyConfig(base_url="http://localhost:8000")
+    )
+    wrapper = LLMWrapper(config=config)
+    response = await wrapper.query("Test Groq query", provider="groq_proxy", model="llama3-70b-8192")
+    assert response["status"] == "success"
+    assert response["content"] is not None and len(response["content"]) > 0
+    assert response["model"] == "llama3-70b-8192"
     assert "API key not found" in str(exc_info.value)
