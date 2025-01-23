@@ -62,29 +62,22 @@ class LLMService:
                 raise ValueError(f"Invalid LLM index: {llm_index}. Must be between 0 and {len(models)-1}")
                 
             model = models[llm_index]
-            # Handle Brave Search differently
+            # Handle Brave Search using specialized knowledge aggregator
             if model == "brave_search":
                 if not self.wrapper.brave_search:
                     yield f"data: {json.dumps({'type': 'error', 'message': 'Brave Search not configured. Please set BRAVE_SEARCH_API_KEY in .env'})}\n\n"
                     return
-                    
+
                 try:
-                    results = await self.wrapper.brave_search.search(query)
-                    formatted_response = []
+                    # Use BraveKnowledgeAggregator for enhanced processing
+                    from brave_search_aggregator.synthesizer.brave_knowledge_aggregator import BraveKnowledgeAggregator
+                    aggregator = BraveKnowledgeAggregator(self.wrapper.brave_search)
                     
-                    # Update title
-                    yield f"data: {json.dumps({'type': 'title', 'title': 'Brave Search'})}\n\n"
-                    
-                    # Format search results
-                    formatted_response.append("### Search Results\n")
-                    for i, result in enumerate(results, 1):
-                        formatted_response.append(f"{i}. **{result.title}**")
-                        formatted_response.append(f"   URL: {result.url}")
-                        formatted_response.append(f"   {result.description}\n")
-                    
-                    content = "\n".join(formatted_response)
-                    complete_response.append(content)
-                    yield f"data: {json.dumps({'type': 'content', 'content': content})}\n\n"
+                    # Process query through specialized pipeline
+                    async for result in aggregator.process_query(query):
+                        if result['type'] == 'content':
+                            complete_response.append(result['content'])
+                        yield f"data: {json.dumps(result)}\n\n"
                 except Exception as e:
                     yield f"data: {json.dumps({'type': 'error', 'message': str(e)})}\n\n"
             else:

@@ -33,6 +33,9 @@ class QueryAnalyzer:
         'java': ['programming language', 'coffee', 'island'],
         'ruby': ['programming language', 'gemstone'],
     }
+    STOP_WORDS = {'a', 'an', 'and', 'are', 'as', 'at', 'be', 'by', 'for',
+                 'from', 'has', 'he', 'in', 'is', 'it', 'its', 'of', 'on',
+                 'that', 'the', 'to', 'was', 'were', 'will', 'with'}
 
     def analyze_query(self, query: str) -> QueryAnalysis:
         """
@@ -95,12 +98,12 @@ class QueryAnalyzer:
         """
         # Simple implementation - split on spaces and handle common phrases
         terms = []
-        words = query.lower().split()
+        words = query.split()
         
         i = 0
         while i < len(words):
             # Check for common two-word phrases
-            if i < len(words) - 1 and f"{words[i]} {words[i+1]}" in {
+            if i < len(words) - 1 and f"{words[i]} {words[i+1]}".lower() in {
                 "machine learning", "artificial intelligence", "deep learning",
                 "data science", "neural networks", "renewable energy"
             }:
@@ -171,3 +174,48 @@ class QueryAnalyzer:
                     for comp in comparisons
                 ]
         return []
+
+    def _optimize_query(self, query: str) -> str:
+        """
+        Perform basic query optimization.
+        - Remove stop words
+        - Remove extra whitespace
+        - Handle special characters
+        
+        Args:
+            query: The search query to optimize
+            
+        Returns:
+            Optimized search string
+        """
+        # Convert to lowercase for consistent processing
+        query = query.lower()
+        
+        # Split into words
+        words = query.split()
+        
+        # Remove stop words while preserving phrase meaning
+        optimized_words = []
+        i = 0
+        while i < len(words):
+            # Skip stop words unless they're part of a known phrase
+            if words[i] not in self.STOP_WORDS or (
+                i < len(words) - 1 and
+                f"{words[i]} {words[i+1]}" in {
+                    "machine learning", "artificial intelligence",
+                    "deep learning", "data science"
+                }
+            ):
+                optimized_words.append(words[i])
+            i += 1
+            
+        # Rejoin words and normalize whitespace
+        optimized = ' '.join(optimized_words)
+        
+        # Handle special characters (keep quotes for exact phrases)
+        optimized = ''.join(c for c in optimized if c.isalnum() or c in ' "\'')
+        
+        # Remove extra whitespace
+        optimized = ' '.join(optimized.split())
+        
+        return optimized

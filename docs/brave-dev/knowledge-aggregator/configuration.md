@@ -5,7 +5,7 @@
 ### Required Environment Variables
 
 ```plaintext
-# Brave Search API Configuration
+# Brave Search API Configuration (MVP)
 BRAVE_API_KEY=your_api_key_here
 MAX_RESULTS_PER_QUERY=20
 TIMEOUT_SECONDS=30
@@ -17,10 +17,119 @@ AZURE_CLIENT_SECRET=your_client_secret
 AZURE_TENANT_ID=005789aa-d109-48c1-b690-c157b9b7d953
 AZURE_SUBSCRIPTION_ID=20cdb97a-3107-4857-88a5-81488217f327
 
-# LLM Configuration
+# LLM Configuration (Advanced Features)
 LLM_MODEL=gpt-4-turbo
 LLM_TEMPERATURE=0.7
 LLM_MAX_TOKENS=2000
+```
+
+### Feature Flag Configuration
+```plaintext
+# Feature Flags (in .env)
+FEATURE_ADVANCED_SYNTHESIS=false    # Enable advanced synthesis features
+FEATURE_PARALLEL_PROCESSING=true    # Enable parallel processing (MVP)
+FEATURE_MOE_ROUTING=false          # Enable MoE routing (advanced)
+FEATURE_TASK_VECTORS=false         # Enable task vectors (advanced)
+FEATURE_SLERP_MERGING=false        # Enable SLERP merging (advanced)
+```
+
+### Configuration Models
+
+#### Feature Flags Model
+```python
+from pydantic import BaseModel, Field
+
+class TestFeatureFlags(BaseModel):
+    """Test-specific feature flag configuration."""
+    advanced_synthesis: bool = Field(
+        default=False,
+        description="Enable advanced synthesis features"
+    )
+    parallel_processing: bool = Field(
+        default=True,
+        description="Enable parallel processing of search results"
+    )
+    moe_routing: bool = Field(
+        default=False,
+        description="Enable mixture of experts routing"
+    )
+    task_vectors: bool = Field(
+        default=False,
+        description="Enable task vector support"
+    )
+    slerp_merging: bool = Field(
+        default=False,
+        description="Enable SLERP-based vector merging"
+    )
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "advanced_synthesis": False,
+                    "parallel_processing": True,
+                    "moe_routing": False,
+                    "task_vectors": False,
+                    "slerp_merging": False
+                }
+            ]
+        }
+    }
+```
+
+#### Server Configuration Model
+```python
+class TestServerConfig(BaseModel):
+    """Test server configuration settings."""
+    # Server settings
+    host: str = Field(default="0.0.0.0", description="Server host address")
+    port: int = Field(default=8001, description="Server port number")
+    reload: bool = Field(default=True, description="Enable auto-reload")
+    workers: int = Field(default=1, description="Number of worker processes")
+    log_level: str = Field(default="debug", description="Logging level")
+    
+    # Brave Search API settings
+    brave_api_key: str = Field(default="", description="Brave Search API key")
+    max_results_per_query: int = Field(
+        default=20,
+        description="Maximum results per query"
+    )
+    timeout_seconds: int = Field(
+        default=30,
+        description="API timeout in seconds"
+    )
+    rate_limit: int = Field(default=20, description="API rate limit")
+
+    # Feature flags
+    features: TestFeatureFlags = Field(
+        default_factory=TestFeatureFlags,
+        description="Feature flag configuration"
+    )
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "host": "0.0.0.0",
+                    "port": 8001,
+                    "reload": True,
+                    "workers": 1,
+                    "log_level": "debug",
+                    "brave_api_key": "your-api-key-here",
+                    "max_results_per_query": 20,
+                    "timeout_seconds": 30,
+                    "rate_limit": 20,
+                    "features": {
+                        "advanced_synthesis": False,
+                        "parallel_processing": True,
+                        "moe_routing": False,
+                        "task_vectors": False,
+                        "slerp_merging": False
+                    }
+                }
+            ]
+        }
+    }
 ```
 
 ### Development Environment Setup
@@ -80,9 +189,11 @@ az webapp config appsettings set \
         AZURE_CLIENT_ID="<id>" \
         AZURE_CLIENT_SECRET="<secret>" \
         AZURE_TENANT_ID="005789aa-d109-48c1-b690-c157b9b7d953" \
-        LLM_MODEL="gpt-4-turbo" \
-        LLM_TEMPERATURE="0.7" \
-        LLM_MAX_TOKENS="2000"
+        FEATURE_ADVANCED_SYNTHESIS="false" \
+        FEATURE_PARALLEL_PROCESSING="true" \
+        FEATURE_MOE_ROUTING="false" \
+        FEATURE_TASK_VECTORS="false" \
+        FEATURE_SLERP_MERGING="false"
 ```
 
 ## Authentication Configuration
@@ -150,7 +261,7 @@ LOGGING = {
 
 ## Rate Limiting Configuration
 
-### Brave Search API
+### Brave Search API (MVP)
 ```python
 # config.py
 BRAVE_SEARCH_CONFIG = {
@@ -174,7 +285,7 @@ RATE_LIMIT_CONFIG = {
 
 ## Content Processing Configuration
 
-### Fetch Configuration
+### Fetch Configuration (MVP)
 ```python
 # fetch_config.py
 FETCH_CONFIG = {
@@ -192,12 +303,22 @@ FETCH_CONFIG = {
 ### Synthesis Configuration
 ```python
 # synthesis_config.py
-SYNTHESIS_CONFIG = {
+
+# MVP Configuration
+BASIC_SYNTHESIS_CONFIG = {
     'max_sources': 5,
     'min_content_length': 100,
     'max_content_length': 8000,
-    'reference_format': '[{index}] {title}',
-    'confidence_threshold': 0.7
+    'reference_format': '[{index}] {title}'
+}
+
+# Advanced Features Configuration (When Enabled)
+ADVANCED_SYNTHESIS_CONFIG = {
+    **BASIC_SYNTHESIS_CONFIG,
+    'confidence_threshold': 0.7,
+    'moe_routing_threshold': 0.8,
+    'task_vector_dimensions': 768,
+    'slerp_interpolation_steps': 10
 }
 ```
 
@@ -248,6 +369,11 @@ BRAVE_API_KEY=test_key
 MAX_RESULTS_PER_QUERY=5
 TIMEOUT_SECONDS=5
 RATE_LIMIT=10
+FEATURE_ADVANCED_SYNTHESIS=false
+FEATURE_PARALLEL_PROCESSING=true
+FEATURE_MOE_ROUTING=false
+FEATURE_TASK_VECTORS=false
+FEATURE_SLERP_MERGING=false
 ```
 
 ## Deployment Configuration
@@ -301,3 +427,22 @@ az monitor metrics alert create \
     --condition "count requests/failed > 10" \
     --window-size 5m \
     --evaluation-frequency 1m
+```
+
+### Feature Flag Management
+```python
+# feature_flags.py
+class FeatureFlags:
+    @staticmethod
+    def is_enabled(feature_name: str) -> bool:
+        """Check if a feature is enabled."""
+        return os.getenv(f"FEATURE_{feature_name.upper()}", "false").lower() == "true"
+
+    @staticmethod
+    def get_enabled_features() -> List[str]:
+        """Get list of all enabled features."""
+        return [
+            key.replace("FEATURE_", "").lower()
+            for key, value in os.environ.items()
+            if key.startswith("FEATURE_") and value.lower() == "true"
+        ]

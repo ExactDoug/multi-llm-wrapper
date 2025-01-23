@@ -21,15 +21,27 @@ Docs_Directory: c:/dev/od-dm-y/OneDrive/dev-projects/multi-llm-wrapper/docs/
    pip install -e .
    ```
 
+3. Start test server (if needed):
+   ```powershell
+   python -m brave_search_aggregator.test_server
+   ```
+
+4. Verify test server:
+   ```powershell
+   curl http://localhost:8001/health
+   curl http://localhost:8001/config
+   ```
+
 # Session Initialization Steps
 1. Read latest continuation prompt at:
    docs/brave-dev/continuation-prompts/2025-[most-recent-timestamp].md
 
 2. Query knowledge graph for current architecture:
-   Use server-memory MCP tool to search 3 separate consecutive 1-word queries for:
-   - "VirtualEnvironment" (development environment)
-   - "ProjectStructure" (project architecture)
-   - "QueryAnalyzer" (component status)
+   Use server-memory MCP tool to search for:
+   - "BraveSearchClient" (API integration status)
+   - "KnowledgeAggregatorImplementation" (processing status)
+   - "TestServer" (infrastructure status)
+   - "RateLimiter" (rate limiting status)
 
 3. Review documentation:
    - README.md
@@ -38,6 +50,8 @@ Docs_Directory: c:/dev/od-dm-y/OneDrive/dev-projects/multi-llm-wrapper/docs/
    - docs/brave-dev/knowledge-aggregator/architecture.md
    - docs/brave-dev/knowledge-aggregator/implementation.md
    - docs/brave-dev/knowledge-aggregator/configuration.md
+   - docs/brave-dev/knowledge-aggregator/testing-strategy.md
+   - docs/brave-dev/knowledge-aggregator/parallel-testing-infrastructure.md
 
 4. Git Status:
    ```powershell
@@ -49,19 +63,49 @@ Docs_Directory: c:/dev/od-dm-y/OneDrive/dev-projects/multi-llm-wrapper/docs/
 [Copy relevant section from continuation prompt's "Next Development Session Tasks"]
 
 # Knowledge Graph Search Pattern
-- Always use the following patten when searching the knowledge graph:
+- Always use the following pattern when searching the knowledge graph:
       1. More-specific search query
-      2. Concot and perform *at least* 5 additional seperate/distinct 1-word search queries you can do that are comprised of:
+      2. Conduct *at least* 3 additional separate/distinct 1-word search queries:
          1. Some of the same terms, but as individual words
-         2. Different terms that are other variations in spelling or construction of the individual terms
-         3. Synonms and related words that may yield results.
+         2. Different terms that are other variations in spelling or construction
+         3. Synonyms and related words that may yield results
       3. 1 final more-specific search query
-      4. Do not abort this sequence early just because you obtained results.
-         1. Assume that there are more results that were documented with alternate keywords, and also did not have relationships properly created in the knowledgegraph to other entities.
-         2. Therefore if you abort this thorough search sequence prematurely, you will not have the full understanding you need, and will probably make assumptions & mistakes.
+      4. Do not abort this sequence early just because you obtained results
+         1. Assume there are more results documented with alternate keywords
+         2. Incomplete searches may lead to missing critical information
+
+# Testing Infrastructure
+1. Always use test server (port 8001) for development
+2. Monitor rate limiting and API usage
+3. Check logs for errors and warnings
+4. Verify feature flag behavior
+5. Document test scenarios and results
+
+# Small-Scale, Low-Budget, MVP, KISS Methodology
+1. Prioritize getting to the first MVP
+2. Keep code simple
+3. Keep plans simple
+4. Don't change project plans and/or scope without the user's express consent
+5. Notify the user if any suggested changes may add to the complexity or duration of the project
+
+## Business Reality
+We are a small business with very limited resources. We must focus on accomplishing the currently-defined
+objectives, or we will never make it to the next stage of the project. We need to keep it simple until
+we tell you otherwise.
+
+# Prioritize Security
+In all our efforts for simplicity and focusing on the current scope and objectives, if at any point
+you become aware of security-specific concerns, you must make this a priority and present these
+to the user, even if it may impact the timing of the project stage completion.
+
+# Real-World Tests
+Real-world tests are important, even if only in our local dev PC with local servers we can configure
+here to replicate the production environment. It is important we do not consider any aspect of the
+project as complete until it has undergone some type of practical real-world test where the code
+is executing in a scenario extremely similar to the production environment.
 
 # Additional Context
-- Following KISS principle
+- Following KISS principle (Keep It Simple Roo)
 - Test-driven development
 - Azure deployment target
 - Company-only access requirements

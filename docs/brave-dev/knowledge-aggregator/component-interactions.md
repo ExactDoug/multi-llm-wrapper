@@ -2,11 +2,11 @@
 
 ## System Overview
 
-The Brave Search Knowledge Aggregator consists of several interacting components that work together to process queries, fetch content, and synthesize responses. This document details how these components interact.
+The Brave Search Knowledge Aggregator consists of several interacting components that work together to process queries, fetch content, and synthesize responses. This document details how these components interact, including both MVP and advanced features.
 
 ## Core Components
 
-### 1. Query Flow
+### 1. Basic Query Flow (MVP)
 ```mermaid
 sequenceDiagram
     participant User
@@ -14,19 +14,19 @@ sequenceDiagram
     participant BraveClient
     participant ContentFetcher
     participant KnowledgeAggregator
-    participant KnowledgeSynthesizer
+    participant BasicSynthesizer
 
     User->>QueryAnalyzer: submit_query()
     QueryAnalyzer->>BraveClient: search()
     BraveClient-->>QueryAnalyzer: search_results
     QueryAnalyzer->>ContentFetcher: fetch_content()
     ContentFetcher-->>QueryAnalyzer: processed_content
-    QueryAnalyzer->>KnowledgeAggregator: process_parallel()
-    KnowledgeAggregator->>KnowledgeSynthesizer: synthesize()
-    KnowledgeSynthesizer-->>User: final_response
+    QueryAnalyzer->>KnowledgeAggregator: simple_parallel()
+    KnowledgeAggregator->>BasicSynthesizer: basic_synthesis()
+    BasicSynthesizer-->>User: final_response
 ```
 
-### 2. Knowledge Synthesis Flow
+### 2. Advanced Query Flow (Implemented, Under Testing)
 ```mermaid
 sequenceDiagram
     participant KnowledgeAggregator
@@ -47,24 +47,35 @@ sequenceDiagram
 
 ## Component Responsibilities
 
-### 1. Query Analyzer
+### 1. Query Analyzer (MVP)
 - Receives user queries
-- Determines search strategy
+- Basic query validation
 - Coordinates with BraveClient
-- Manages content fetching
+- Simple content fetching
 
 ### 2. Knowledge Aggregator
-- Manages parallel processing
-- Coordinates source-specific handling
-- Resolves conflicts between sources
-- Preserves source nuances
-- Tracks performance metrics
+#### MVP Features
+- Basic parallel processing
+- Simple result combination
+- Basic error handling
+
+#### Advanced Features (Under Testing)
+- Source-specific processing
+- Conflict resolution
+- Nuance preservation
+- Performance metrics
 
 ### 3. Knowledge Synthesizer
-- Implements MoE routing
-- Manages task vector operations
-- Handles SLERP-based merging
-- Supports multiple synthesis modes
+#### MVP Features
+- Basic response combination
+- Simple result formatting
+- Reference tracking
+
+#### Advanced Features (Under Testing)
+- MoE routing framework
+- Task vector operations
+- SLERP-based merging
+- Multiple synthesis modes
 
 ## Inter-Component Communication
 
@@ -93,25 +104,40 @@ class SynthesisResult:
 
 ### 2. Communication Patterns
 
-#### Query Processing
+#### Basic Processing (MVP)
 ```python
 # Query Analysis
 analysis = query_analyzer.analyze_query(query)
 search_results = brave_client.search(analysis.search_string)
 processed_content = content_fetcher.fetch_content(search_results)
 
-# Knowledge Processing
-aggregated_results = knowledge_aggregator.process_parallel(
+# Simple Processing
+aggregated_results = knowledge_aggregator.simple_parallel(
     query=query,
-    content=processed_content,
-    preserve_nuances=True
+    content=processed_content
 )
 
-# Synthesis
-final_response = knowledge_synthesizer.synthesize(
+# Basic Synthesis
+final_response = knowledge_synthesizer.basic_synthesis(
+    query=query,
+    results=aggregated_results
+)
+```
+
+#### Advanced Processing (Under Testing)
+```python
+# Advanced Processing
+aggregated_results = await knowledge_aggregator.process_parallel(
+    query=query,
+    content=processed_content,
+    use_advanced_features=True
+)
+
+# Advanced Synthesis
+final_response = await knowledge_synthesizer.synthesize(
     query=query,
     results=aggregated_results,
-    mode="research"
+    use_advanced_features=True
 )
 ```
 
@@ -119,131 +145,139 @@ final_response = knowledge_synthesizer.synthesize(
 
 ### 1. Component Selection
 ```python
-# Feature flag checks in component factory
-def get_synthesizer(config: Config) -> BaseSynthesizer:
-    if FeatureFlags.is_enabled('use_new_aggregator'):
-        return KnowledgeSynthesizer(config)
-    return LegacySynthesizer(config)
+class KnowledgeSynthesizer:
+    async def synthesize(
+        self,
+        query: str,
+        results: List[Dict[str, str]],
+        use_advanced_features: bool = False
+    ) -> SynthesisResult:
+        if not use_advanced_features:
+            return await self.basic_synthesis(query, results)
+            
+        # Advanced path (when feature flag enabled)
+        try:
+            route = await self.route_query(query)
+            combined = await self.combine_knowledge(results)
+            return await self.merge_responses(combined)
+        except Exception as e:
+            logger.warning(f"Advanced synthesis failed: {e}, falling back to basic")
+            return await self.basic_synthesis(query, results)
 ```
 
 ### 2. Feature-Specific Behavior
 ```python
 class KnowledgeAggregator:
-    def process_parallel(self, query: str, sources: List[str]) -> AggregationResult:
-        if FeatureFlags.is_enabled('enable_parallel_processing'):
-            return await self._process_parallel(query, sources)
-        return await self._process_sequential(query, sources)
+    async def process_parallel(
+        self,
+        query: str,
+        sources: List[str],
+        use_advanced_features: bool = False
+    ) -> AggregationResult:
+        if not use_advanced_features:
+            return await self.simple_parallel(query, sources)
+            
+        try:
+            results = await asyncio.gather(*[
+                self.process_source(source, query)
+                for source in sources
+            ])
+            return await self.resolve_conflicts(results)
+        except Exception as e:
+            logger.warning(f"Advanced processing failed: {e}, falling back to basic")
+            return await self.simple_parallel(query, sources)
 ```
 
 ## Error Handling
 
-### 1. Component-Level Handling
+### 1. MVP Error Handling
+```python
+class BasicSynthesizer:
+    async def basic_synthesis(self, query: str, results: List[Dict]) -> SynthesisResult:
+        try:
+            combined = self.combine_results(results)
+            return self.format_basic_result(combined)
+        except Exception as e:
+            logger.error(f"Basic synthesis failed: {e}")
+            return self.create_error_response(str(e))
+```
+
+### 2. Advanced Error Handling with Fallback
 ```python
 class KnowledgeSynthesizer:
     async def synthesize(self, query: str, results: List[Dict]) -> SynthesisResult:
+        if not self.use_advanced_features:
+            return await self.basic_synthesis(query, results)
+            
         try:
             route = await self.route_query(query)
             combined = await self.combine_knowledge(results)
             merged = await self.merge_responses(combined)
             return self.format_result(merged)
-        except SynthesisError as e:
-            logger.error(f"Synthesis failed: {e}")
-            if FeatureFlags.is_enabled('use_new_aggregator'):
-                return await self.fallback_synthesis(query, results)
-            raise
-```
-
-### 2. Cross-Component Recovery
-```python
-class QueryProcessor:
-    async def process(self, query: str) -> ProcessingResult:
-        try:
-            return await self._process_with_new_system(query)
         except Exception as e:
-            logger.error(f"New system failed: {e}")
-            if self.should_fallback():
-                return await self._process_with_legacy_system(query)
-            raise
+            logger.warning(f"Advanced synthesis failed: {e}, falling back to basic")
+            return await self.basic_synthesis(query, results)
 ```
 
-## Performance Monitoring
+## Testing Strategy
 
-### 1. Metrics Collection
-```python
-class PerformanceMonitor:
-    def track_operation(self, operation: str, duration: float):
-        self.metrics[operation].append(duration)
-        if FeatureFlags.is_enabled('enable_detailed_metrics'):
-            self.detailed_metrics[operation].append({
-                'duration': duration,
-                'timestamp': time.time(),
-                'memory_usage': psutil.Process().memory_info().rss
-            })
-```
-
-### 2. Health Checks
-```python
-class SystemHealth:
-    def check_component_health(self) -> Dict[str, bool]:
-        return {
-            'query_analyzer': self.check_analyzer(),
-            'brave_client': self.check_client(),
-            'aggregator': self.check_aggregator(),
-            'synthesizer': self.check_synthesizer()
-        }
-```
-
-## Testing Considerations
-
-### 1. Integration Testing
+### 1. Basic Feature Testing (MVP)
 ```python
 @pytest.mark.integration
-async def test_component_interaction():
+async def test_basic_flow():
+    """Test basic MVP functionality."""
     query = "test query"
-    
-    # Test complete flow
     analyzer = QueryAnalyzer()
     aggregator = KnowledgeAggregator()
     synthesizer = KnowledgeSynthesizer()
     
+    # Test basic flow
     analysis = await analyzer.analyze_query(query)
     assert analysis.is_valid
     
-    results = await aggregator.process_parallel(query, analysis)
-    assert results.all_sources_processed
+    results = await aggregator.simple_parallel(query)
+    assert len(results) > 0
     
-    response = await synthesizer.synthesize(query, results)
-    assert response.is_coherent
+    response = await synthesizer.basic_synthesis(query, results)
+    assert response.content
 ```
 
-### 2. Performance Testing
+### 2. Advanced Feature Testing
 ```python
-@pytest.mark.performance
-async def test_parallel_processing():
+@pytest.mark.integration
+async def test_advanced_flow():
+    """Test advanced features with fallback."""
+    query = "test query"
     aggregator = KnowledgeAggregator()
+    synthesizer = KnowledgeSynthesizer()
     
-    start_time = time.time()
+    # Test with advanced features
     results = await aggregator.process_parallel(
-        query="test query",
-        sources=["brave_search", "llm1", "llm2"]
+        query=query,
+        use_advanced_features=True
     )
-    duration = time.time() - start_time
+    assert results.content
     
-    assert duration < 2.0  # Maximum 2 seconds
-    assert results.all_sources_processed
-    assert results.performance_metrics['processing_time'] < 1.5
+    # Verify fallback works
+    results_basic = await aggregator.process_parallel(
+        query=query,
+        use_advanced_features=False
+    )
+    assert results_basic.content
 ```
 
-## Future Considerations
+## Next Steps
 
-### 1. Planned Enhancements
-- Improved error recovery mechanisms
-- Enhanced performance monitoring
-- Advanced conflict resolution
-- Sophisticated source weighting
+### 1. Immediate Focus (MVP)
+- Complete real-world testing of basic functionality
+- Verify error handling and fallback mechanisms
+- Document actual performance characteristics
+- Stabilize core features
 
-### 2. Scalability Improvements
-- Enhanced parallel processing
-- Optimized vector operations
-- Improved caching strategies
-- Better resource utilization
+### 2. Post-MVP Enhancements
+- Enhance existing advanced features
+- Improve parallel processing efficiency
+- Optimize vector operations
+- Expand synthesis capabilities
+
+Note: Focus remains on stabilizing current features and completing MVP functionality before expanding advanced capabilities.

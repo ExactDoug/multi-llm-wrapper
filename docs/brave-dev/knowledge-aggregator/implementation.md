@@ -19,7 +19,31 @@
 
 ### Component Implementation Details
 
-#### 1. QueryAnalyzer
+#### 1. Configuration Management
+```python
+# Using Pydantic models for configuration
+class TestFeatureFlags(BaseModel):
+    """Feature flag configuration with schema validation."""
+    advanced_synthesis: bool = Field(...)
+    parallel_processing: bool = Field(...)
+    # Additional feature flags...
+
+class TestServerConfig(BaseModel):
+    """Server configuration with schema validation."""
+    host: str = Field(...)
+    port: int = Field(...)
+    features: TestFeatureFlags = Field(...)
+    # Additional settings...
+```
+
+Key Features:
+- Pydantic model validation
+- Automatic schema generation
+- Documentation via Field descriptions
+- Example configurations
+- Environment variable loading
+
+#### 2. QueryAnalyzer
 ```python
 class QueryAnalyzer:
     """
@@ -63,11 +87,37 @@ Key Features:
 
 #### 3. Test Server
 ```python
-app = FastAPI(title="Brave Search Knowledge Aggregator Test Server")
+app = FastAPI(
+    title="Brave Search Knowledge Aggregator Test Server",
+    description="Test server with feature flags and configuration management"
+)
+
+# Configuration with schema validation
+config = TestServerConfig.from_env()
+
+@app.get("/health")
+async def health_check() -> Dict[str, Any]:
+    """Health check endpoint with feature flag status."""
+    return {
+        "status": "healthy",
+        "environment": "test",
+        "port": config.port,
+        "feature_flags": config.features.get_enabled_features()
+    }
+
+@app.get("/config")
+async def get_config() -> Dict[str, Any]:
+    """Get current configuration with schema examples."""
+    return {
+        "max_results_per_query": config.max_results_per_query,
+        "timeout_seconds": config.timeout_seconds,
+        "rate_limit": config.rate_limit,
+        "feature_flags": config.features.get_enabled_features()
+    }
 
 @app.post("/search")
 async def search(request: SearchRequest) -> Dict[str, Any]:
-    """Execute a search query."""
+    """Execute a search query with parallel processing."""
     results = await client.search(request.query)
     processed_results = await aggregator.process_parallel(
         query=request.query,
@@ -78,11 +128,13 @@ async def search(request: SearchRequest) -> Dict[str, Any]:
 ```
 
 Key Features:
-- Separate testing environment (port 8001)
-- Health check endpoint
-- Configuration management
+- Pydantic model configuration
+- OpenAPI schema generation
+- Feature flag integration
+- Health monitoring
+- Configuration inspection
 - Detailed logging
-- Feature flag control
+- Error handling
 
 ### Configuration Management
 

@@ -2,89 +2,87 @@
 
 ## Overview
 
-This guide details the transition from BraveSearchIntegration to BraveSearchAggregator, outlining the phased approach and feature flag system used to ensure a smooth migration.
+This guide details the transition from BraveSearchIntegration to BraveSearchAggregator, focusing on stabilizing MVP functionality while maintaining advanced features already implemented.
 
 ## Current Status
 
-### Implemented Components
+### MVP Features (Currently Working)
+1. Basic Query Processing
+   - Query validation
+   - Search string creation
+   - Basic error handling
+
+2. Simple Parallel Processing
+   - Basic parallel execution
+   - Error handling
+   - Resource management
+
+3. Basic Grid Integration
+   - Simple display integration
+   - Basic result formatting
+   - Error state handling
+
+### Advanced Features (Implemented but Need Testing)
 1. Synthesis Architecture Framework
-   - MoE-style routing system
+   - Initial MoE-style routing system
    - Task vector operations (placeholder)
    - SLERP-based merging (placeholder)
-   - Multiple synthesis modes
 
 2. Knowledge Aggregation System
-   - Parallel processing framework
    - Source-specific processing
    - Conflict resolution
    - Nuance preservation
 
 3. Feature Flag System
    - Controlled feature rollout
-   - A/B testing support
    - Fallback mechanisms
    - Configuration management
 
-## Transition Phases
+## Transition Strategy
 
-### Phase 1: Feature Flag Setup (Completed)
-- Implemented feature flag system
-- Added configuration management
-- Created fallback mechanisms
-- Established monitoring
-
-### Phase 2: Parallel Operation (Current)
-- Both systems running simultaneously
-- Feature flags controlling traffic distribution
-- Monitoring and comparing results
-- Gathering performance metrics
-
-### Phase 3: Vector Operations (Next)
-- Implement actual task vector operations
-- Replace placeholder implementation
-- Add comprehensive tests
-- Update documentation
-
-### Phase 4: SLERP Integration (Upcoming)
-- Implement actual SLERP-based merging
-- Replace placeholder implementation
-- Add comprehensive tests
-- Update documentation
-
-### Phase 5: Production Validation (Planned)
-- Test with real workloads
+### Phase 1: Real-World Testing (Current)
+- Test with actual Brave Search API
 - Verify parallel processing
-- Monitor system performance
-- Document production patterns
+- Test grid integration
+- Document performance characteristics
 
-### Phase 6: Complete Migration (Final)
-- Gradually increase traffic to new system
-- Monitor for issues
-- Remove old implementation
+### Phase 2: MVP Stabilization (Next)
+- Address issues from testing
+- Optimize core functionality
+- Complete basic features
 - Update documentation
+
+### Phase 3: Advanced Feature Verification
+- Test existing advanced features
+- Verify fallback mechanisms
+- Document actual capabilities
+- Optimize performance
+
+### Phase 4: Feature Completion (Post-MVP)
+- Complete task vector operations
+- Enhance SLERP-based merging
+- Expand synthesis capabilities
+- Extend monitoring
 
 ## Feature Flag Configuration
 
-### Available Flags
+### Current Feature Flags
 ```python
 FEATURE_FLAGS = {
-    # Core Features
-    'use_new_aggregator': False,  # Master switch for new system
-    'enable_parallel_processing': False,
-    'enable_source_specific_handling': False,
+    # MVP Features
+    'enable_parallel_processing': True,    # Basic parallel processing
+    'enable_grid_integration': True,       # Basic grid display
+    'enable_error_handling': True,         # Basic error handling
     
-    # Synthesis Features
-    'use_moe_routing': False,
-    'use_task_vectors': False,
-    'use_slerp_merging': False,
+    # Advanced Features
+    'use_advanced_synthesis': False,       # Advanced synthesis features
+    'use_moe_routing': False,             # MoE routing system
+    'use_task_vectors': False,            # Task vector operations
+    'use_slerp_merging': False,           # SLERP-based merging
     
     # Monitoring
-    'enable_detailed_metrics': True,
-    'enable_performance_tracking': True,
-    
-    # Testing
-    'enable_ab_testing': False,
-    'log_comparison_results': True
+    'enable_basic_metrics': True,          # Basic performance tracking
+    'enable_advanced_metrics': False       # Detailed metrics and analysis
 }
 ```
 
@@ -92,139 +90,158 @@ FEATURE_FLAGS = {
 ```python
 from brave_search_aggregator.utils.feature_flags import FeatureFlags
 
-# Check if feature is enabled
-if FeatureFlags.is_enabled('use_new_aggregator'):
-    # Use new implementation
-    aggregator = BraveSearchAggregator()
-else:
-    # Use old implementation
-    integration = BraveSearchIntegration()
+class KnowledgeSynthesizer:
+    async def synthesize(
+        self,
+        query: str,
+        results: List[Dict[str, str]],
+        use_advanced_features: bool = False
+    ) -> SynthesisResult:
+        if not use_advanced_features:
+            return await self.basic_synthesis(query, results)
+            
+        try:
+            route = await self.route_query(query)
+            combined = await self.combine_knowledge(results)
+            return await self.merge_responses(combined)
+        except Exception as e:
+            logger.warning(f"Advanced synthesis failed: {e}, falling back to basic")
+            return await self.basic_synthesis(query, results)
 ```
 
 ## Monitoring and Metrics
 
-### Key Metrics to Track
-1. Response Quality
+### Current Focus
+1. Basic Performance Metrics
+   - Response times
+   - Error rates
+   - Resource usage
+
+2. Feature Flag Status
+   - Enabled features
+   - Usage patterns
+   - Error correlations
+
+3. Grid Integration
+   - Display performance
+   - User interaction
+   - Error states
+
+### Advanced Metrics (When Enabled)
+1. Synthesis Quality
    - Relevance scores
-   - Synthesis coherence
+   - Coherence metrics
    - Source integration quality
 
-2. Performance Metrics
-   - Response time
-   - Resource usage
-   - Error rates
+2. Advanced Performance
+   - Vector operation efficiency
+   - Merging performance
+   - Resource optimization
 
-3. System Health
-   - Component status
-   - Feature flag states
-   - Error patterns
+## Testing Strategy
 
-### Monitoring Setup
+### MVP Testing
 ```python
-# Configure monitoring
-monitoring_config = {
-    'metrics_enabled': True,
-    'log_level': 'INFO',
-    'performance_tracking': True,
-    'error_tracking': True
-}
+@pytest.mark.integration
+async def test_basic_functionality():
+    """Test core MVP features."""
+    config = Config.from_env()
+    aggregator = BraveSearchAggregator(config)
+    
+    # Test basic flow
+    response = await aggregator.process_query(
+        "latest news",
+        use_advanced_features=False
+    )
+    assert response.content
+    assert response.references
+```
+
+### Advanced Feature Testing
+```python
+@pytest.mark.integration
+async def test_advanced_features():
+    """Test advanced features with fallback."""
+    config = Config.from_env()
+    synthesizer = KnowledgeSynthesizer(config)
+    
+    # Test with advanced features
+    advanced_response = await synthesizer.synthesize(
+        "AI advances",
+        responses,
+        use_advanced_features=True
+    )
+    assert advanced_response.content
+    assert advanced_response.confidence_scores
 ```
 
 ## Rollback Procedures
 
 ### Quick Rollback
-1. Disable new system feature flag:
 ```python
-FeatureFlags.disable('use_new_aggregator')
+# Disable advanced features
+FeatureFlags.disable('use_advanced_synthesis')
+FeatureFlags.disable('use_moe_routing')
+FeatureFlags.disable('use_task_vectors')
+FeatureFlags.disable('use_slerp_merging')
+
+# Verify basic functionality
+response = await aggregator.process_query("test query", use_advanced_features=False)
+assert response.content
 ```
 
-2. Verify old system operation:
+### Gradual Feature Adjustment
 ```python
-integration = BraveSearchIntegration()
-status = integration.health_check()
-assert status.is_healthy
-```
-
-### Gradual Rollback
-1. Reduce traffic to new system:
-```python
-FeatureFlags.set_percentage('use_new_aggregator', 0.25)  # 25% traffic
-```
-
-2. Monitor for issues:
-```python
+# Adjust feature usage gradually
+FeatureFlags.set_percentage('use_advanced_synthesis', 25)  # 25% traffic
 metrics.watch_error_rate(threshold=0.01)  # 1% error rate threshold
-```
-
-## Testing During Transition
-
-### Integration Tests
-```python
-@pytest.mark.integration
-async def test_system_compatibility():
-    """Test both systems can operate simultaneously"""
-    old_result = await integration.process_query("test query")
-    new_result = await aggregator.process_query("test query")
-    assert compare_results(old_result, new_result)
-```
-
-### Performance Tests
-```python
-@pytest.mark.performance
-async def test_parallel_performance():
-    """Test parallel processing performance"""
-    start_time = time.time()
-    result = await aggregator.process_parallel(
-        query="test query",
-        sources=["brave_search", "llm1", "llm2"]
-    )
-    duration = time.time() - start_time
-    assert duration < 2.0  # Maximum 2 seconds
 ```
 
 ## Documentation Updates
 
 ### Required Updates
-1. Update API documentation
+1. Document actual capabilities
 2. Update configuration guides
-3. Update monitoring documentation
-4. Update deployment guides
+3. Document performance characteristics
+4. Update testing guides
 
 ### Version Control
-- Tag releases appropriately
-- Document breaking changes
+- Tag MVP releases
+- Document feature states
 - Maintain change log
 - Update migration guides
 
 ## Support and Maintenance
 
-### Support Procedures
-1. Monitor error rates and performance
-2. Track feature flag status
+### Current Focus
+1. Monitor basic functionality
+2. Track error rates
 3. Document known issues
 4. Maintain fallback procedures
 
-### Maintenance Tasks
-1. Regular performance reviews
-2. Feature flag cleanup
-3. Documentation updates
-4. Code cleanup
+### Future Maintenance
+1. Advanced feature optimization
+2. Performance tuning
+3. Feature flag cleanup
+4. Code optimization
 
-## Timeline and Milestones
+## Timeline
 
 ### Current Phase (January 22, 2025)
-- Feature flag system implemented
-- Basic framework in place
-- Placeholder implementations active
+- Real-world testing of MVP features
+- Advanced feature verification
+- Documentation updates
 
 ### Next Steps
-1. Implement actual vector operations
-2. Implement actual SLERP merging
-3. Test with production workloads
-4. Optimize performance
+1. Complete real-world testing
+2. Stabilize MVP functionality
+3. Verify advanced features
+4. Update documentation
 
-### Final Migration
-- Target: February 2025
-- Dependencies: All placeholder implementations replaced
-- Requirements: Performance metrics met
-- Validation: Production testing complete
+### Future Phases
+1. Optimize advanced features
+2. Expand capabilities
+3. Enhance monitoring
+4. Improve performance
+
+Note: Focus remains on stabilizing current features and completing MVP functionality before expanding advanced capabilities.

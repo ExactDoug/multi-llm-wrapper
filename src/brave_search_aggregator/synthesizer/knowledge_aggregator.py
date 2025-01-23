@@ -5,6 +5,9 @@ from dataclasses import dataclass
 from typing import List, Dict, Any
 import asyncio
 from enum import Enum
+import logging
+
+logger = logging.getLogger(__name__)
 
 class SourceType(Enum):
     """Types of knowledge sources."""
@@ -58,6 +61,25 @@ class KnowledgeAggregator:
                 max_retries=2
             )
         }
+        self._raw_results = {}  # Store raw results for processing
+
+    def _process_brave_search_results(self, results: List[Dict[str, Any]]) -> str:
+        """Process raw Brave Search results into a structured format."""
+        processed_content = []
+        
+        for i, result in enumerate(results, 1):
+            title = result.get('title', 'No title')
+            description = result.get('description', 'No description')
+            url = result.get('url', 'No URL')
+            
+            entry = (
+                f"{i}. {title}\n"
+                f"   {description}\n"
+                f"   Source: {url}\n"
+            )
+            processed_content.append(entry)
+            
+        return "\n".join(processed_content)
 
     async def process_source(
         self,
@@ -80,16 +102,39 @@ class KnowledgeAggregator:
         if not config:
             raise ValueError(f"Unknown source: {source}")
             
-        # TODO: Implement actual source processing
-        # This is a placeholder implementation
-        await asyncio.sleep(0.1)  # Simulate processing time
+        logger.debug(f"Processing source: {source}")
         
-        return {
-            "source": source,
-            "content": f"Processed content from {source}",
-            "confidence": config.processing_weight,
-            "nuances": {"key": "value"} if preserve_nuances else {}
-        }
+        if source == "brave_search":
+            # Use stored raw results for Brave Search
+            raw_results = self._raw_results.get(query, [])
+            content = self._process_brave_search_results(raw_results)
+            confidence = config.processing_weight
+            
+            # Store metrics about the processing
+            metrics = {
+                "result_count": len(raw_results),
+                "confidence": confidence
+            }
+            
+            return {
+                "source": source,
+                "content": content,
+                "confidence": confidence,
+                "nuances": {
+                    "result_count": len(raw_results),
+                    "source_type": "web_search"
+                } if preserve_nuances else {},
+                "metrics": metrics
+            }
+        else:
+            # Placeholder for other source types
+            await asyncio.sleep(0.1)
+            return {
+                "source": source,
+                "content": f"Processed content from {source}",
+                "confidence": config.processing_weight,
+                "nuances": {"key": "value"} if preserve_nuances else {}
+            }
 
     async def resolve_conflicts(
         self,
@@ -104,11 +149,13 @@ class KnowledgeAggregator:
         Returns:
             Resolved results
         """
-        # TODO: Implement actual conflict resolution
-        # For now, just sort by confidence
+        # Sort by confidence and result count (if available)
         return sorted(
             results,
-            key=lambda x: x.get("confidence", 0),
+            key=lambda x: (
+                x.get("confidence", 0),
+                x.get("metrics", {}).get("result_count", 0)
+            ),
             reverse=True
         )
 
@@ -116,7 +163,8 @@ class KnowledgeAggregator:
         self,
         query: str,
         sources: List[str],
-        preserve_nuances: bool = True
+        preserve_nuances: bool = True,
+        raw_results: List[Dict[str, Any]] = None
     ) -> AggregationResult:
         """
         Process multiple sources in parallel.
@@ -125,11 +173,16 @@ class KnowledgeAggregator:
             query: Query to process
             sources: List of sources to process
             preserve_nuances: Whether to preserve source-specific nuances
+            raw_results: Optional raw results from Brave Search
             
         Returns:
             Aggregated result
         """
         start_time = asyncio.get_event_loop().time()
+        
+        # Store raw results if provided
+        if raw_results is not None:
+            self._raw_results[query] = raw_results
         
         # Create tasks for parallel processing
         tasks = [
@@ -156,7 +209,7 @@ class KnowledgeAggregator:
         source_metrics = {
             result["source"]: {
                 "confidence": result.get("confidence", 0),
-                "processing_time": 0.1  # Placeholder
+                "result_count": result.get("metrics", {}).get("result_count", 0)
             }
             for result in resolved_results
         }
@@ -170,10 +223,13 @@ class KnowledgeAggregator:
         end_time = asyncio.get_event_loop().time()
         processing_time = end_time - start_time
         
+        # Clean up stored results
+        self._raw_results.pop(query, None)
+        
         return AggregationResult(
             content=combined_content,
             all_sources_processed=len(successful_results) == len(sources),
-            conflicts_resolved=True,  # Placeholder
+            conflicts_resolved=True,
             nuances_preserved=preserve_nuances,
             source_metrics=source_metrics,
             processing_time=processing_time

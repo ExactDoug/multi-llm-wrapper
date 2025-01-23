@@ -10,6 +10,18 @@ class FeatureState(Enum):
     BETA = "beta"
     ON = "on"
 
+    @classmethod
+    def from_env(cls, value: str) -> 'FeatureState':
+        """Convert environment variable value to FeatureState."""
+        value = value.lower()
+        if value in ("false", "0", "off"):
+            return cls.OFF
+        elif value in ("true", "1", "on"):
+            return cls.ON
+        elif value == "beta":
+            return cls.BETA
+        return cls.OFF  # Default to OFF for safety
+
 @dataclass
 class Feature:
     """Feature configuration."""
@@ -30,37 +42,37 @@ class FeatureFlags:
             "moe_routing": Feature(
                 name="moe_routing",
                 description="MoE-style routing for model selection",
-                state=FeatureState(os.getenv("FEATURE_MOE_ROUTING", "beta")),
+                state=FeatureState.from_env(os.getenv("FEATURE_MOE_ROUTING", "off")),
                 rollout_percentage=float(os.getenv("FEATURE_MOE_ROUTING_ROLLOUT", "50.0"))
             ),
             "task_vectors": Feature(
                 name="task_vectors",
                 description="Task vector operations for knowledge combination",
-                state=FeatureState(os.getenv("FEATURE_TASK_VECTORS", "beta")),
+                state=FeatureState.from_env(os.getenv("FEATURE_TASK_VECTORS", "off")),
                 rollout_percentage=float(os.getenv("FEATURE_TASK_VECTORS_ROLLOUT", "30.0"))
             ),
             "slerp_merging": Feature(
                 name="slerp_merging",
                 description="SLERP-based response merging",
-                state=FeatureState(os.getenv("FEATURE_SLERP_MERGING", "beta")),
+                state=FeatureState.from_env(os.getenv("FEATURE_SLERP_MERGING", "off")),
                 rollout_percentage=float(os.getenv("FEATURE_SLERP_MERGING_ROLLOUT", "30.0"))
             ),
             "parallel_processing": Feature(
                 name="parallel_processing",
                 description="Parallel query processing across sources",
-                state=FeatureState(os.getenv("FEATURE_PARALLEL_PROCESSING", "on")),
+                state=FeatureState.from_env(os.getenv("FEATURE_PARALLEL_PROCESSING", "on")),
                 rollout_percentage=100.0
             ),
             "source_specific_processing": Feature(
                 name="source_specific_processing",
                 description="Source-specific processing with nuance preservation",
-                state=FeatureState(os.getenv("FEATURE_SOURCE_SPECIFIC", "beta")),
+                state=FeatureState.from_env(os.getenv("FEATURE_SOURCE_SPECIFIC", "off")),
                 rollout_percentage=float(os.getenv("FEATURE_SOURCE_SPECIFIC_ROLLOUT", "50.0"))
             ),
             "grid_compatibility": Feature(
                 name="grid_compatibility",
                 description="Maintain compatibility with existing grid interface",
-                state=FeatureState(os.getenv("FEATURE_GRID_COMPAT", "on")),
+                state=FeatureState.from_env(os.getenv("FEATURE_GRID_COMPAT", "on")),
                 rollout_percentage=100.0
             )
         }

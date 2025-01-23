@@ -10,7 +10,7 @@ from pydantic import BaseModel
 
 from brave_search_aggregator.fetcher.brave_client import BraveSearchClient
 from brave_search_aggregator.synthesizer.knowledge_aggregator import KnowledgeAggregator
-from brave_search_aggregator.utils.test_config import TestServerConfig
+from brave_search_aggregator.utils.test_config import TestServerConfig, TestFeatureFlags
 
 # Configure logging
 logging.basicConfig(
@@ -68,14 +68,8 @@ async def health_check() -> Dict[str, Any]:
     return {
         "status": "healthy",
         "environment": "test",
-        "port": 8001,
-        "feature_flags": {
-            "parallel_processing": config.feature_parallel_processing,
-            "advanced_synthesis": config.feature_advanced_synthesis,
-            "moe_routing": config.feature_moe_routing,
-            "task_vectors": config.feature_task_vectors,
-            "slerp_merging": config.feature_slerp_merging
-        }
+        "port": config.port,
+        "feature_flags": config.features.get_enabled_features()
     }
 
 @app.get("/config")
@@ -85,13 +79,7 @@ async def get_config() -> Dict[str, Any]:
         "max_results_per_query": config.max_results_per_query,
         "timeout_seconds": config.timeout_seconds,
         "rate_limit": config.rate_limit,
-        "feature_flags": {
-            "parallel_processing": config.feature_parallel_processing,
-            "advanced_synthesis": config.feature_advanced_synthesis,
-            "moe_routing": config.feature_moe_routing,
-            "task_vectors": config.feature_task_vectors,
-            "slerp_merging": config.feature_slerp_merging
-        }
+        "feature_flags": config.features.get_enabled_features()
     }
 
 @app.post("/search")
@@ -146,10 +134,11 @@ def main():
     """Run the test server."""
     uvicorn.run(
         "brave_search_aggregator.test_server:app",
-        host="0.0.0.0",
-        port=8001,
-        reload=True,
-        log_level="debug"
+        host=config.host,
+        port=config.port,
+        reload=config.reload,
+        log_level=config.log_level,
+        workers=config.workers
     )
 
 if __name__ == "__main__":
