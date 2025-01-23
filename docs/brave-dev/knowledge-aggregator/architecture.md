@@ -21,6 +21,50 @@ The Brave Search Knowledge Aggregator implements a pattern for search engine-bas
 
 This pattern separates search engine knowledge sources from regular LLM interactions, allowing specialized query processing while maintaining clean integration with the multi-llm-wrapper system.
 
+### Model Interface Pattern
+The BraveKnowledgeAggregator implements a dual interface approach that enables it to act as a model while preserving its enhanced capabilities:
+
+1. Internal Interface
+   - Rich response format with query analysis
+   - Detailed search results and metadata
+   - Knowledge synthesis capabilities
+   - Enhanced error details and context
+
+2. Model Interface
+   - Presents as standard model to wrapper
+   - Compatible with multi-llm grid
+   - Standardized response format
+   - Consistent error handling
+
+3. Interface Transformation
+   ```
+   Rich Internal Format -> Wrapper Layer -> Standard Model Format
+   ```
+
+This pattern enables the BraveKnowledgeAggregator to integrate seamlessly with the multi-llm grid while maintaining its sophisticated capabilities for future use cases. It also sets a precedent for integrating other non-LLM components as models in the wrapper system.
+
+### Model Interface Pattern
+The BraveKnowledgeAggregator implements a dual interface approach that enables it to act as a model while preserving its enhanced capabilities:
+
+1. Internal Interface
+   - Rich response format with query analysis
+   - Detailed search results and metadata
+   - Knowledge synthesis capabilities
+   - Enhanced error details and context
+
+2. Model Interface
+   - Presents as standard model to wrapper
+   - Compatible with multi-llm grid
+   - Standardized response format
+   - Consistent error handling
+
+3. Interface Transformation
+   ```
+   Rich Internal Format -> Wrapper Layer -> Standard Model Format
+   ```
+
+This pattern enables the BraveKnowledgeAggregator to integrate seamlessly with the multi-llm grid while maintaining its sophisticated capabilities for future use cases. It also sets a precedent for integrating other non-LLM components as models in the wrapper system.
+
 ## Current Implementation Status
 
 ### Successfully Implemented
@@ -32,6 +76,8 @@ This pattern separates search engine knowledge sources from regular LLM interact
 - Feature flag system ✓
 - Test server infrastructure ✓
 - Production service integration ✓
+- Model interface pattern implementation ✓
+- Model interface pattern implementation ✓
 
 ### Pending Verification
 - Streaming behavior characteristics

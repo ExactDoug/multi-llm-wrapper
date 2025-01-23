@@ -22,18 +22,16 @@ class BraveKnowledgeAggregator:
         """Process a query and yield results."""
         try:
             # Get query analysis first
-            query_analysis = await self.query_analyzer.analyze(query)
+            query_analysis = await self.query_analyzer.analyze_query(query)
 
             # Get search results
             search_results = []
             try:
-                # Get first result to verify search works
-                search_generator = self.brave_client.search(query)
-                try:
-                    first_result = await search_generator.__anext__()
-                    search_results.append(first_result)
-
-                    # Now that we know search works, yield initial content
+                # Get search results using async iterator
+                search_iterator = self.brave_client.search(query)  # Remove await since search() returns an iterator
+                async for result in search_iterator:
+                    search_results.append(result)
+                    # Yield content after each result
                     formatted_response = {
                         "type": "content",
                         "title": f"Processing query: {query}",
@@ -44,37 +42,22 @@ class BraveKnowledgeAggregator:
                     }
                     yield formatted_response
 
-                    # Get remaining results
-                    async for result in search_generator:
-                        search_results.append(result)
-                        # Yield content after each result
-                        formatted_response = {
-                            "type": "content",
-                            "title": f"Processing query: {query}",
-                            "content": (
-                                f"Query analysis: {query_analysis}\n\n"
-                                f"Search results:\n{self._format_results(search_results)}"
-                            )
-                        }
-                        yield formatted_response
-
-                    # After all results, add knowledge synthesis
-                    knowledge = await self.knowledge_synthesizer.synthesize(search_results)
-                    formatted_response = {
-                        "type": "content",
-                        "title": f"Processing query: {query}",
-                        "content": (
-                            f"Query analysis: {query_analysis}\n\n"
-                            f"Search results:\n{self._format_results(search_results)}\n\n"
-                            f"Knowledge synthesis: {knowledge}"
-                        )
-                    }
-                    yield formatted_response
-
-                except StopAsyncIteration:
-                    # No results found
+                if not search_results:
                     yield {"type": "error", "error": "No search results found"}
                     return
+
+                # After all results, add knowledge synthesis
+                knowledge = await self.knowledge_synthesizer.synthesize(search_results)
+                formatted_response = {
+                    "type": "content",
+                    "title": f"Processing query: {query}",
+                    "content": (
+                        f"Query analysis: {query_analysis}\n\n"
+                        f"Search results:\n{self._format_results(search_results)}\n\n"
+                        f"Knowledge synthesis: {knowledge}"
+                    )
+                }
+                yield formatted_response
 
             except Exception as e:
                 # If we got any results before the error, yield them

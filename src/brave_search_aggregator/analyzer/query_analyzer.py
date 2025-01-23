@@ -22,6 +22,29 @@ class QueryAnalysis:
             self.sub_queries = []
         if self.possible_interpretations is None:
             self.possible_interpretations = []
+            
+    def __str__(self) -> str:
+        """String representation of query analysis."""
+        parts = [
+            f"Search string: {self.search_string}",
+            f"Complexity: {self.complexity}"
+        ]
+        
+        if self.is_ambiguous:
+            parts.append("Status: Ambiguous")
+            if self.possible_interpretations:
+                parts.append(f"Possible interpretations: {', '.join(self.possible_interpretations)}")
+                
+        if self.sub_queries:
+            parts.append(f"Sub-queries: {', '.join(self.sub_queries)}")
+            
+        if self.insights:
+            parts.append(f"Insights: {self.insights}")
+            
+        if not self.is_suitable_for_search:
+            parts.append(f"Not suitable for search: {self.reason_unsuitable}")
+            
+        return "\n".join(parts)
 
 class QueryAnalyzer:
     """Analyzes and optimizes search queries."""

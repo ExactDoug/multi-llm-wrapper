@@ -48,60 +48,85 @@ class BraveSearchClient:
         self.timeout = config.timeout_seconds
         self.rate_limiter = RateLimiter(config.rate_limit)
         
-    async def search(self, query: str, count: int = None) -> List[Dict[str, Any]]:
+    class SearchResultIterator:
+        """Async iterator for search results."""
+        def __init__(self, client, query: str, count: int = None):
+            self.client = client
+            self.query = query
+            self.count = count
+            self.results = None
+            self.index = 0
+
+        async def __aiter__(self):
+            return self
+
+        async def __anext__(self):
+            if self.results is None:
+                # First call - fetch results
+                await self.client.rate_limiter.acquire()
+                
+                headers = {
+                    "Accept": "application/json",
+                    "X-Subscription-Token": self.client.api_key
+                }
+                
+                params = {
+                    "q": self.query,
+                    "count": min(self.count or self.client.max_results, 20)  # API limit
+                }
+                
+                logger.debug(f"Making Brave Search API request to {self.client.base_url}")
+                logger.debug(f"Query parameters: {params}")
+                
+                try:
+                    async with self.client.session.get(
+                        self.client.base_url,
+                        headers=headers,
+                        params=params,
+                        timeout=self.client.timeout
+                    ) as response:
+                        logger.debug(f"Brave Search API response status: {response.status}")
+                        
+                        if response.status != 200:
+                            error_text = await response.text()
+                            logger.error(f"Brave Search API error: {error_text}")
+                            raise BraveSearchError(f"API error: {response.status} - {error_text}")
+                        
+                        data = await response.json()
+                        self.results = data.get("web", {}).get("results", [])
+                        logger.debug(f"Received {len(self.results)} results from Brave Search API")
+                        
+                except asyncio.TimeoutError:
+                    logger.error("Brave Search API request timed out")
+                    raise BraveSearchError("Request timed out")
+                    
+                except BraveSearchError:
+                    raise
+                    
+                except Exception as e:
+                    logger.error(f"Brave Search API request failed: {str(e)}")
+                    raise BraveSearchError(f"Search failed: {str(e)}")
+
+            if not self.results or self.index >= len(self.results):
+                raise StopAsyncIteration
+
+            result = self.results[self.index]
+            self.index += 1
+            return result
+
+    async def search(self, query: str, count: int = None):
         """
         Execute a search query against Brave Search API.
+        Returns an async iterator that yields search results one at a time.
         
         Args:
             query: Search query string
             count: Number of results to return (defaults to config.max_results_per_query)
             
         Returns:
-            List of search results
+            AsyncIterator yielding search results
             
         Raises:
             BraveSearchError: For API or processing errors
         """
-        try:
-            # Apply rate limiting
-            await self.rate_limiter.acquire()
-            
-            # Use correct headers from working implementation
-            headers = {
-                "Accept": "application/json",
-                "X-Subscription-Token": self.api_key
-            }
-            
-            params = {
-                "q": query,
-                "count": min(count or self.max_results, 20)  # API limit
-            }
-            
-            logger.debug(f"Making Brave Search API request to {self.base_url}")
-            logger.debug(f"Query parameters: {params}")
-            
-            async with self.session.get(
-                self.base_url,
-                headers=headers,
-                params=params,
-                timeout=self.timeout
-            ) as response:
-                logger.debug(f"Brave Search API response status: {response.status}")
-                
-                if response.status == 200:
-                    data = await response.json()
-                    results = data.get("web", {}).get("results", [])
-                    logger.debug(f"Received {len(results)} results from Brave Search API")
-                    return results
-                else:
-                    error_text = await response.text()
-                    logger.error(f"Brave Search API error: {error_text}")
-                    raise BraveSearchError(f"API error: {response.status} - {error_text}")
-                    
-        except asyncio.TimeoutError:
-            logger.error("Brave Search API request timed out")
-            raise BraveSearchError("Request timed out")
-            
-        except Exception as e:
-            logger.error(f"Brave Search API request failed: {str(e)}")
-            raise BraveSearchError(f"Search failed: {str(e)}")
+        return self.SearchResultIterator(self, query, count)

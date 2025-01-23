@@ -25,21 +25,52 @@ The BraveKnowledgeAggregator provides enhanced search result processing with str
 ## Implementation Details
 
 ### Streaming Support
+
+#### Async Iterator Pattern
+The BraveKnowledgeAggregator implements proper async iteration for streaming results:
+
+1. Search Client Implementation
+```python
+class SearchResultIterator:
+    """Async iterator for search results."""
+    async def __aiter__(self):
+        return self
+
+    async def __anext__(self):
+        if not self.results:
+            # Fetch results on first iteration
+            await self._fetch_results()
+        if self.index >= len(self.results):
+            raise StopAsyncIteration
+        result = self.results[self.index]
+        self.index += 1
+        return result
+
+async def search(self, query: str) -> AsyncIterator:
+    """Returns an async iterator for search results."""
+    return self.SearchResultIterator(self, query)
+```
+
+2. Aggregator Implementation
 ```python
 async def process_query(self, query: str) -> AsyncGenerator[Dict[str, Union[str, bool]], None]:
     """Process a query and yield results."""
     try:
-        # Get first result to verify search works
-        search_generator = self.brave_client.search(query)
-        try:
-            first_result = await search_generator.__anext__()
-            # Yield content after verifying search works
-            yield formatted_response
-            # Continue processing remaining results
-            async for result in search_generator:
-                # Yield content after each result
-                yield formatted_response
+        # Get query analysis first
+        query_analysis = await self.query_analyzer.analyze_query(query)
+        
+        # Get search results using async iterator
+        search_iterator = await self.brave_client.search(query)
+        async for result in search_iterator:
+            # Process and yield each result
+            yield self._format_response(result, query_analysis)
 ```
+
+This pattern ensures:
+- Proper async iteration protocol implementation
+- Efficient streaming of results
+- Correct coroutine handling
+- Proper error propagation
 
 ### Error Handling
 1. Early Error Detection
@@ -66,20 +97,46 @@ async def process_query(self, query: str) -> AsyncGenerator[Dict[str, Union[str,
    - Default implementations provided
    - Flexible configuration
 
-2. Response Format
+2. Response Formats
+#### Internal Rich Format
 ```python
 {
     "type": "content",
     "title": str,
+    "content": str,
+    "metadata": Dict[str, Any]
+}
+```
+
+#### Model Interface Format
+```python
+{
+    "type": "content",
     "content": str
 }
 ```
 
-3. Integration Points
+3. Format Transformation
+```python
+def transform_to_model_format(rich_response: Dict) -> Dict:
+    """Transform rich internal response to model format."""
+    if rich_response["type"] == "error":
+        return {
+            "type": "error",
+            "message": rich_response["error"]  # Standard error format
+        }
+    return {
+        "type": "content",
+        "content": rich_response["content"]  # Standard content format
+    }
+```
+
+4. Integration Points
    - Port 8000 for production
    - Streaming response handling
    - Error propagation
    - Synthesis integration
+   - Model interface compatibility
 
 ## Production Setup
 

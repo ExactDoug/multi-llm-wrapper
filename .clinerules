@@ -47,7 +47,7 @@ Docs_Directory: c:/dev/od-dm-y/OneDrive/dev-projects/multi-llm-wrapper/docs/
    docs/brave-dev/continuation-prompts/2025-[most-recent-timestamp].md
 
 2. Query knowledge graph for current architecture:
-   Use server-memory MCP tool to search for:
+   Use server-memory MCP tool to search for the following separate distinct terms:
    - "BraveSearchClient" (API integration status)
    - "KnowledgeAggregatorImplementation" (processing status)
    - "TestServer" (infrastructure status)
@@ -55,6 +55,16 @@ Docs_Directory: c:/dev/od-dm-y/OneDrive/dev-projects/multi-llm-wrapper/docs/
    - "WebIntegration" (web service status)
    - "StreamingVerification" (streaming status)
    - "ErrorHandling" (error handling patterns)
+   - "BraveKnowledgeAggregatorModelPattern" (model interface implementation)
+   - "AsyncIteratorPattern" (async iteration implementation)
+
+## CRITICAL KNOWLEDGE GRAPH SEARCH METHODOLOGY
+  DO NOT COMBINE SEARCH TERMS WHEN QUERYING THE KNOWLEDGE GRAPH!
+  THE KNOWLEDGE GRAPH CAN HANDLE MULTI-WORD SEARCH STRINGS, BUT DO NOT COMBINE
+  MULTIPLE SEARCHES INTO 1 SEARCH. IT WILL INTERPRET THIS AS 1 LITERAL SEARCH
+  TERM, AND WILL YIELD NO RESULTS. THEREFORE THE ABOVE QUERIES MUST BE DONE
+  AS SEQUENTIAL/CONSECUTIVE INDVIDIDUAL QUERIES TO THE KNOWLEDGE GRAPH FOR EACH
+  OF THE INDIVIDUAL TERMS / SEARCH STRINGS.
 
 3. Review documentation:
    - README.md
@@ -75,18 +85,6 @@ Docs_Directory: c:/dev/od-dm-y/OneDrive/dev-projects/multi-llm-wrapper/docs/
 # Development Focus
 [Copy relevant section from continuation prompt's "Next Development Session Tasks"]
 
-# Knowledge Graph Search Pattern
-- Always use the following pattern when searching the knowledge graph:
-      1. More-specific search query
-      2. Conduct *at least* 3 additional separate/distinct 1-word search queries:
-         1. Some of the same terms, but as individual words
-         2. Different terms that are other variations in spelling or construction
-         3. Synonyms and related words that may yield results
-      3. 1 final more-specific search query
-      4. Do not abort this sequence early just because you obtained results
-         1. Assume there are more results documented with alternate keywords
-         2. Incomplete searches may lead to missing critical information
-
 # Testing Infrastructure
 1. Always use test server (port 8001) for development
 2. Monitor rate limiting and API usage
@@ -96,6 +94,11 @@ Docs_Directory: c:/dev/od-dm-y/OneDrive/dev-projects/multi-llm-wrapper/docs/
 6. Run streaming verification tests
 7. Test error handling scenarios
 8. Verify web integration
+9. Verify async iterator implementation:
+   - Test proper __aiter__ and __anext__ implementation
+   - Verify coroutine handling in async chain
+   - Check streaming response format
+   - Test error propagation through iterator chain
 
 # Production Verification
 1. Environment Setup

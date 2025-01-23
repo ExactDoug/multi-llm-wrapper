@@ -8,6 +8,15 @@ class LLMService:
         self.wrapper = LLMWrapper()
         self.responses = {}  # session_id -> {query, timestamp, responses}
         self.last_cleanup = datetime.now()
+    
+    async def __aenter__(self):
+        """Async context manager entry."""
+        return self
+    
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        """Async context manager exit with cleanup."""
+        if hasattr(self.wrapper, 'brave_search'):
+            await self.wrapper.brave_search.close()
         
     def add_response(self, session_id: str, llm_index: int, response: str, query: str = None):
         """Add a response for a specific LLM in a session."""
@@ -73,13 +82,60 @@ class LLMService:
                     from brave_search_aggregator.synthesizer.brave_knowledge_aggregator import BraveKnowledgeAggregator
                     aggregator = BraveKnowledgeAggregator(self.wrapper.brave_search)
                     
-                    # Process query through specialized pipeline
+                    # Process query through specialized pipeline and transform to standard model format
                     async for result in aggregator.process_query(query):
                         if result['type'] == 'content':
-                            complete_response.append(result['content'])
-                        yield f"data: {json.dumps(result)}\n\n"
+                            # Transform rich format to standard model format while preserving metadata
+                            transformed_content = {
+                                'type': 'content',
+                                'status': 'success',
+                                'content': result['content'],
+                                'model_metadata': {
+                                    'model': 'brave_search',
+                                    'source': result.get('source', 'brave_search'),
+                                    'confidence': result.get('confidence', 1.0),
+                                    'title': result.get('title'),
+                                    'query_analysis': result.get('query_analysis'),
+                                    'knowledge_synthesis': result.get('knowledge_synthesis')
+                                }
+                            }
+                            # Accumulate complete response while preserving structure
+                            if result.get('content'):
+                                complete_response.append(result['content'])
+                            yield f"data: {json.dumps(transformed_content)}\n\n"
+                        elif result['type'] == 'error':
+                            # Enhanced error format standardization
+                            error_content = {
+                                'type': 'error',
+                                'status': 'error',
+                                'message': result.get('error') or result.get('message', 'Unknown error'),
+                                'code': result.get('code', 'BRAVE_SEARCH_ERROR'),
+                                'model_metadata': {
+                                    'model': 'brave_search',
+                                    'phase': result.get('phase', 'unknown'),
+                                    'recoverable': result.get('recoverable', False)
+                                }
+                            }
+                            yield f"data: {json.dumps(error_content)}\n\n"
                 except Exception as e:
-                    yield f"data: {json.dumps({'type': 'error', 'message': str(e)})}\n\n"
+                    # Enhanced error handling with standardized format and metadata
+                    error_content = {
+                        'type': 'error',
+                        'status': 'error',
+                        'message': str(e),
+                        'code': 'BRAVE_SEARCH_INTERNAL_ERROR',
+                        'model_metadata': {
+                            'model': 'brave_search',
+                            'phase': 'aggregation',
+                            'recoverable': False,
+                            'error_type': e.__class__.__name__
+                        }
+                    }
+                    yield f"data: {json.dumps(error_content)}\n\n"
+                finally:
+                    # Ensure resources are properly cleaned up
+                    if hasattr(aggregator, 'close'):
+                        await aggregator.close()
             else:
                 # Get the stream generator for LLM responses
                 stream = await self.wrapper.query(query, model=model, stream=True)

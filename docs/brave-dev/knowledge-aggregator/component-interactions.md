@@ -45,6 +45,69 @@ sequenceDiagram
     ResponseFormatter-->>KnowledgeAggregator: final_response
 ```
 
+### 3. Model Interface Flow (Implemented)
+```mermaid
+sequenceDiagram
+    participant User
+    participant Wrapper
+    participant BraveKnowledgeAggregator
+    participant InternalComponents
+    participant ModelInterface
+
+    User->>Wrapper: query()
+    Wrapper->>BraveKnowledgeAggregator: process_query()
+    BraveKnowledgeAggregator->>InternalComponents: rich_processing()
+    InternalComponents-->>BraveKnowledgeAggregator: rich_response
+    BraveKnowledgeAggregator->>ModelInterface: transform_format()
+    ModelInterface-->>BraveKnowledgeAggregator: model_format
+    BraveKnowledgeAggregator-->>Wrapper: standard_response
+    Wrapper-->>User: final_response
+```
+
+### 3. Model Interface Flow (Implemented)
+
+### 4. Async Iterator Pattern Flow (Implemented)
+```mermaid
+sequenceDiagram
+    participant User
+    participant BraveKnowledgeAggregator
+    participant SearchClient
+    participant SearchIterator
+    participant QueryAnalyzer
+    participant KnowledgeSynthesizer
+
+    User->>BraveKnowledgeAggregator: process_query()
+    BraveKnowledgeAggregator->>QueryAnalyzer: analyze_query()
+    QueryAnalyzer-->>BraveKnowledgeAggregator: query_analysis
+    BraveKnowledgeAggregator->>SearchClient: search()
+    SearchClient-->>BraveKnowledgeAggregator: search_iterator
+    loop For Each Result
+        BraveKnowledgeAggregator->>SearchIterator: __anext__()
+        SearchIterator-->>BraveKnowledgeAggregator: result
+        BraveKnowledgeAggregator->>User: yield formatted_response
+    end
+    BraveKnowledgeAggregator->>KnowledgeSynthesizer: synthesize()
+    KnowledgeSynthesizer-->>BraveKnowledgeAggregator: knowledge
+    BraveKnowledgeAggregator->>User: yield final_response
+```
+```mermaid
+sequenceDiagram
+    participant User
+    participant Wrapper
+    participant BraveKnowledgeAggregator
+    participant InternalComponents
+    participant ModelInterface
+
+    User->>Wrapper: query()
+    Wrapper->>BraveKnowledgeAggregator: process_query()
+    BraveKnowledgeAggregator->>InternalComponents: rich_processing()
+    InternalComponents-->>BraveKnowledgeAggregator: rich_response
+    BraveKnowledgeAggregator->>ModelInterface: transform_format()
+    ModelInterface-->>BraveKnowledgeAggregator: model_format
+    BraveKnowledgeAggregator-->>Wrapper: standard_response
+    Wrapper-->>User: final_response
+```
+
 ## Component Responsibilities
 
 ### 1. Query Analyzer (MVP)
@@ -76,6 +139,38 @@ sequenceDiagram
 - Task vector operations
 - SLERP-based merging
 - Multiple synthesis modes
+
+### 4. Model Interface
+#### Core Features
+- Standard model response format
+- Streaming compatibility
+- Error format standardization
+- Session handling
+
+#### Internal Features
+- Rich response preservation
+- Enhanced error context
+- Metadata handling
+- Format transformation
+
+### 5. Async Iterator Components
+#### Search Client
+- Implements async iterator protocol
+- Manages API interactions
+- Handles rate limiting
+- Provides streaming results
+
+#### Search Iterator
+- Implements __aiter__ and __anext__
+- Manages result pagination
+- Handles API request timing
+- Maintains iterator state
+
+#### Aggregator Integration
+- Proper coroutine handling
+- Streaming response format
+- Error propagation
+- Resource cleanup
 
 ## Inter-Component Communication
 
