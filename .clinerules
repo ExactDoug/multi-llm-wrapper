@@ -75,6 +75,9 @@ Docs_Directory: c:/dev/od-dm-y/OneDrive/dev-projects/multi-llm-wrapper/docs/
    - docs/brave-dev/knowledge-aggregator/configuration.md
    - docs/brave-dev/knowledge-aggregator/testing-strategy.md
    - docs/brave-dev/knowledge-aggregator/parallel-testing-infrastructure.md
+   - docs/brave-dev/knowledge-aggregator/scope-updates/2025-01-23-streaming-first.md
+   - docs/brave-dev/knowledge-aggregator/phases/phase1-streaming.md
+   - docs/brave-dev/knowledge-aggregator/phases/phase2-content.md
 
 4. Git Status:
    ```powershell
