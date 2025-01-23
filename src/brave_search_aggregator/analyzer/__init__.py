@@ -1,8 +1,6 @@
 """
-Query analysis and search strategy components.
+Analyzer package for processing and optimizing search queries.
 """
+from .query_analyzer import QueryAnalyzer, QueryAnalysis
 
-from .query_analyzer import QueryAnalyzer
-from .search_strategy import SearchStrategy
-
-__all__ = ["QueryAnalyzer", "SearchStrategy"]
+__all__ = ['QueryAnalyzer', 'QueryAnalysis']

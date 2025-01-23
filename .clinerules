@@ -1,0 +1,71 @@
+<task>
+Current-Sub-Project: Brave Search Knowledge Aggregator
+Mode: Code
+Directory: c:/dev/od-dm-y/OneDrive/dev-projects/multi-llm-wrapper/src/brave_search_aggregator
+Docs_Directory: c:/dev/od-dm-y/OneDrive/dev-projects/multi-llm-wrapper/docs/brave-dev/knowledge-aggregator
+
+Parent-Project: 
+Mode: Architect
+Directory: c:/dev/od-dm-y/OneDrive/dev-projects/multi-llm-wrapper
+Docs_Directory: c:/dev/od-dm-y/OneDrive/dev-projects/multi-llm-wrapper/docs/
+
+# Environment Setup
+1. Activate Python virtual environment:
+   ```powershell
+   & C:\dev\venvs\multi-llm-wrapper\Scripts\Activate.ps1
+   ```
+
+2. Verify/Install dependencies:
+   ```powershell
+   pip install -r requirements.txt
+   pip install -e .
+   ```
+
+# Session Initialization Steps
+1. Read latest continuation prompt at:
+   docs/brave-dev/continuation-prompts/2025-[most-recent-timestamp].md
+
+2. Query knowledge graph for current architecture:
+   Use server-memory MCP tool to search 3 separate consecutive 1-word queries for:
+   - "VirtualEnvironment" (development environment)
+   - "ProjectStructure" (project architecture)
+   - "QueryAnalyzer" (component status)
+
+3. Review documentation:
+   - README.md
+   - docs/multi-llm-synthesis.md
+   - docs/brave-dev/knowledge-aggregator/README.md
+   - docs/brave-dev/knowledge-aggregator/architecture.md
+   - docs/brave-dev/knowledge-aggregator/implementation.md
+   - docs/brave-dev/knowledge-aggregator/configuration.md
+
+4. Git Status:
+   ```powershell
+   git pull origin main
+   git checkout -b feature/[feature-name]
+   ```
+
+# Development Focus
+[Copy relevant section from continuation prompt's "Next Development Session Tasks"]
+
+# Knowledge Graph Search Pattern
+- Always use the following patten when searching the knowledge graph:
+      1. More-specific search query
+      2. Concot and perform *at least* 5 additional seperate/distinct 1-word search queries you can do that are comprised of:
+         1. Some of the same terms, but as individual words
+         2. Different terms that are other variations in spelling or construction of the individual terms
+         3. Synonms and related words that may yield results.
+      3. 1 final more-specific search query
+      4. Do not abort this sequence early just because you obtained results.
+         1. Assume that there are more results that were documented with alternate keywords, and also did not have relationships properly created in the knowledgegraph to other entities.
+         2. Therefore if you abort this thorough search sequence prematurely, you will not have the full understanding you need, and will probably make assumptions & mistakes.
+
+# Additional Context
+- Following KISS principle
+- Test-driven development
+- Azure deployment target
+- Company-only access requirements
+- Using PowerShell for Windows environment
+- Virtual environment required for development
+- Github username is exactdoug
+</task>

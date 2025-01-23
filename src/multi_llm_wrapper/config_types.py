@@ -1,4 +1,5 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from typing import Dict
 
 @dataclass
 class BraveSearchConfig:
@@ -9,3 +10,7 @@ class BraveSearchConfig:
     timeout_seconds: int = 30
     retry_attempts: int = 3
     retry_delay_seconds: int = 1
+    model_map: Dict[str, str] = field(default_factory=lambda: {
+        "brave-search": "brave_search/search",
+        "brave-local": "brave_search/local"
+    })

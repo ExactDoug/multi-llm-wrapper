@@ -1,16 +1,22 @@
 """
-Brave Search Knowledge Aggregator
+Brave Search Knowledge Aggregator package.
 
-A sophisticated component for the multi-llm-wrapper project that enhances search capabilities
-by intelligently processing and synthesizing web search results.
+This package provides components for analyzing queries, fetching search results,
+and synthesizing knowledge from web content.
 """
 
 __version__ = "0.1.0"
-__author__ = "Exact Technology Partners"
-__email__ = "dmortensen@exactpartners.com"
 
-from .analyzer import QueryAnalyzer
-from .fetcher import ContentFetcher
+from .analyzer import QueryAnalyzer, QueryAnalysis
+from .fetcher import ContentFetcher, BraveSearchClient
 from .synthesizer import KnowledgeSynthesizer
+from .utils import Config
 
-__all__ = ["QueryAnalyzer", "ContentFetcher", "KnowledgeSynthesizer"]
+__all__ = [
+    'QueryAnalyzer',
+    'QueryAnalysis',
+    'ContentFetcher',
+    'BraveSearchClient',
+    'KnowledgeSynthesizer',
+    'Config',
+]

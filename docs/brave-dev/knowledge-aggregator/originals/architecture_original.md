@@ -17,21 +17,11 @@ Location: `src/brave_search_aggregator/fetcher/`
 - Handles content retrieval from web pages
 - Implements rate limiting and error handling
 
-### 3. Knowledge Processing Components
+### 3. Knowledge Synthesizer
 Location: `src/brave_search_aggregator/synthesizer/`
-
-#### Knowledge Synthesizer
-- Implements MoE-style routing for model selection
-- Uses task vector operations for knowledge combination (placeholder)
-- Applies SLERP-based merging for response integration (placeholder)
-- Supports multiple synthesis modes (research, coding, analysis, creative)
-
-#### Knowledge Aggregator
-- Handles parallel processing of multiple sources
-- Implements source-specific processing with configurable weights
-- Manages conflict resolution between sources
-- Preserves source-specific nuances
-- Provides detailed metrics for each source
+- Processes search results and web content
+- Generates coherent responses
+- Manages reference tracking
 
 ### 4. Utility Components
 Location: `src/brave_search_aggregator/utils/`

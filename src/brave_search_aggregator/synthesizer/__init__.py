@@ -1,8 +1,6 @@
 """
-Content processing and knowledge synthesis components.
+Synthesizer package for generating coherent responses from search results.
 """
-
-from .content_processor import ContentProcessor
 from .knowledge_synthesizer import KnowledgeSynthesizer
 
-__all__ = ["ContentProcessor", "KnowledgeSynthesizer"]
+__all__ = ['KnowledgeSynthesizer']

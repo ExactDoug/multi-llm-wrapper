@@ -9,32 +9,79 @@ import asyncio
 def test_configs():
     openai_config = OpenAIConfig(
         api_key="test-openai-key",
-        organization_id="test-org-id"
+        organization_id="test-org-id",
+        model_map={
+            "gpt-4": "gpt-4",
+            "gpt-3.5-turbo": "gpt-3.5-turbo"
+        }
     )
     anthropic_config = AnthropicConfig(
-        api_key="test-anthropic-key"
+        api_key="test-anthropic-key",
+        model_map={
+            "claude-3": "claude-3-sonnet-20240229"
+        }
     )
+    
+    # Create base config with OpenAI as default
+    base_config = WrapperConfig(
+        default_model="gpt-4",
+        default_provider="openai",
+        openai=openai_config,
+        anthropic=anthropic_config
+    )
+    
+    # Create provider-specific configs
+    openai_focused = base_config.copy()
+    anthropic_focused = base_config.copy()
+    anthropic_focused.default_model = "claude-3"
+    anthropic_focused.default_provider = "anthropic"
+    
     return {
-        "openai": WrapperConfig(
-            default_model="gpt-4",
-            default_provider="openai",
-            openai=openai_config
-        ),
-        "anthropic": WrapperConfig(
-            default_model="claude-3-sonnet-20240229",
-            default_provider="anthropic",
-            anthropic=anthropic_config
-        )
+        "openai": openai_focused,
+        "anthropic": anthropic_focused
     }
 
 @pytest.fixture
 def mock_completion():
-    mock = AsyncMock()
+    async def mock_async_completion(*args, **kwargs):
+        # Always use OpenAI for tests
+        model = kwargs.get('model', 'gpt-4')
+        
+        # Create mock response
+        mock_message = MagicMock(content="Test response")
+        mock_choice = MagicMock(message=mock_message)
+        mock_response = MagicMock(
+            choices=[mock_choice],
+            usage=MagicMock(
+                prompt_tokens=5,
+                completion_tokens=5,
+                total_tokens=10
+            ),
+            model=model,
+            provider='openai'  # Always OpenAI for tests
+        )
+        
+        # Add OpenAI-specific attributes
+        if 'headers' in kwargs:
+            mock_response.organization_id = kwargs['headers'].get('OpenAI-Organization')
+            
+        # Handle error cases
+        if kwargs.get('error_type'):
+            if kwargs['error_type'] == 'timeout':
+                raise TimeoutError("Request timed out")
+            elif kwargs['error_type'] == 'validation_error':
+                raise ValueError("Invalid request")
+            elif kwargs['error_type'] == 'rate_limit':
+                raise Exception("Rate limit exceeded")
+            
+        return mock_response
+
+    mock = AsyncMock(side_effect=mock_async_completion)
     with patch('litellm.acompletion', mock):
         yield mock
 
 @pytest.fixture
-def mock_completion_no_delay():
+async def mock_completion_no_delay():
     async def mock_async_completion(*args, **kwargs):
         mock_message = MagicMock(content="Test response")
         mock_choice = MagicMock(message=mock_message)
@@ -45,7 +92,7 @@ def mock_completion_no_delay():
         return mock_response
 
     mock = AsyncMock(side_effect=mock_async_completion)
-    with patch('multi_llm_wrapper.wrapper.completion', mock):
+    with patch('litellm.acompletion', mock):
         yield mock
 
 @pytest.mark.asyncio
@@ -142,24 +189,31 @@ async def test_provider_edge_cases(mock_completion, test_configs):
     """Test provider edge cases and boundary conditions"""
     wrapper = LLMWrapper(config=test_configs["openai"])
 
-    # Test empty prompt
+    # Test empty prompt validation
     response = await wrapper.query("", model="gpt-4")
     assert response["status"] == "error"
     assert response["error_type"] == "validation_error"
 
-    # Test timeout handling
-    with patch('multi_llm_wrapper.wrapper.completion',
-              AsyncMock(side_effect=TimeoutError("Request timed out"))):
-        response = await wrapper.query("Test prompt", model="gpt-4")
-        assert response["status"] == "error"
-        assert response["error_type"] == "timeout"
+    # Test timeout error
+    mock_completion.side_effect = TimeoutError("Request timed out")
+    response = await wrapper.query("Test prompt", model="gpt-4")
+    assert response["status"] == "error"
+    assert response["error_type"] == "timeout"
 
-    # Test rate limit handling
-    with patch('multi_llm_wrapper.wrapper.completion',
-              AsyncMock(side_effect=Exception("Rate limit exceeded"))):
-        response = await wrapper.query("Test prompt", model="gpt-4")
-        assert response["status"] == "error"
-        assert "rate limit" in response["error"].lower()
+    # Test rate limit error
+    mock_completion.side_effect = Exception("Rate limit exceeded")
+    response = await wrapper.query("Test prompt", model="gpt-4")
+    assert response["status"] == "error"
+    assert response["error_type"] == "rate_limit"
+
+    # Test authentication error
+    mock_completion.side_effect = Exception("Authentication failed")
+    response = await wrapper.query("Test prompt", model="gpt-4")
+    assert response["status"] == "error"
+    assert response["error_type"] == "auth_error"
+
+    # Reset mock for subsequent tests
+    mock_completion.side_effect = None
 
 @pytest.mark.asyncio
 async def test_caching_mechanism(mock_completion):

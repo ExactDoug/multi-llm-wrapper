@@ -32,14 +32,6 @@ class PerplexityConfig(ProviderConfig):
         }
 
 @dataclass
-class ProviderConfig:
-    """Base configuration for LLM providers"""
-    api_key: Optional[str] = None
-    timeout_seconds: int = 30
-    max_retries: int = 2
-    model_map: Dict[str, str] = field(default_factory=dict)
-
-@dataclass
 class OpenAIConfig(ProviderConfig):
     """OpenAI-specific configuration"""
     organization_id: Optional[str] = None
@@ -133,39 +125,56 @@ class WrapperConfig:
         if not provider_configs[self.default_provider].api_key:
             raise ValueError(f"{self.default_provider.capitalize()} API key not found in environment or configuration")
             
+    def copy(self):
+        """Create a deep copy of the configuration"""
+        return WrapperConfig(
+            default_model=self.default_model,
+            default_provider=self.default_provider,
+            timeout_seconds=self.timeout_seconds,
+            max_retries=self.max_retries,
+            anthropic=AnthropicConfig(**vars(self.anthropic)),
+            openai=OpenAIConfig(**vars(self.openai)),
+            groq=GroqConfig(**vars(self.groq)),
+            groq_proxy=GroqProxyConfig(**vars(self.groq_proxy)),
+            perplexity=PerplexityConfig(**vars(self.perplexity)),
+            gemini=GeminiConfig(**vars(self.gemini)),
+            brave_search=BraveConfig(**vars(self.brave_search))
+        )
+
     def get_provider_config(self, model: Optional[str] = None) -> tuple[str, ProviderConfig]:
         """Get provider and configuration based on model"""
         model = model or self.default_model
-
-        # Check if the model string starts with the provider name
-        if model.startswith("openai/"):
-            return "openai", self.openai
-        elif model.startswith("anthropic/"):
-            return "anthropic", self.anthropic
-        elif model.startswith("groq/"):
-            return "groq", self.groq
-        elif model.startswith("groq_proxy/"):
-            return "groq_proxy", self.groq_proxy
-        elif model.startswith("perplexity/"):
-            return "perplexity", self.perplexity
-        elif model.startswith("gemini/"):
-            return "gemini", self.gemini
-        elif model.startswith("brave_search/"):
-            return "brave_search", self.brave_search
-
-        # Check each provider's model map
-        for provider, config in {
-            "openai": self.openai,
-            "anthropic": self.anthropic,
-            "groq": self.groq,
-            "groq_proxy": self.groq_proxy,
-            "perplexity": self.perplexity,
-            "gemini": self.gemini,
-            "brave_search": self.brave_search
-        }.items():
+        
+        # First check explicit provider prefixes
+        provider_prefixes = {
+            "openai/": ("openai", self.openai),
+            "anthropic/": ("anthropic", self.anthropic),
+            "groq/": ("groq", self.groq),
+            "groq_proxy/": ("groq_proxy", self.groq_proxy),
+            "perplexity/": ("perplexity", self.perplexity),
+            "gemini/": ("gemini", self.gemini),
+            "brave_search/": ("brave_search", self.brave_search)
+        }
+        
+        for prefix, (provider, config) in provider_prefixes.items():
+            if model.startswith(prefix):
+                return provider, config
+                
+        # Then check model maps in priority order
+        provider_configs = [
+            ("openai", self.openai),
+            ("anthropic", self.anthropic),
+            ("groq", self.groq),
+            ("groq_proxy", self.groq_proxy),
+            ("perplexity", self.perplexity),
+            ("gemini", self.gemini),
+            ("brave_search", self.brave_search)
+        ]
+        
+        for provider, config in provider_configs:
             if model in config.model_map:
                 return provider, config
-
+                
         raise ValueError(f"Unsupported model: {model}")
 # Create a function to get default config instead of a module-level instance
 def get_default_config() -> WrapperConfig:

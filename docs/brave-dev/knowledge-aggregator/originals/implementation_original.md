@@ -1,20 +1,5 @@
 # Brave Search Knowledge Aggregator - Implementation Guide
 
-## Implementation Progress
-
-### Current Status (January 22, 2025)
-- Synthesis architecture framework implemented
-- Knowledge aggregation system with parallel processing added
-- Feature flags system for controlled rollout created
-- Comprehensive test suites established
-- Component interaction documentation completed
-
-### In Progress
-- Task vector operations implementation (currently placeholder)
-- SLERP-based merging implementation (currently placeholder)
-- Production testing of parallel processing
-- Performance optimization of vector operations
-
 ## Project Structure
 
 ```
@@ -119,88 +104,14 @@ class ContentProcessor:
 #### knowledge_synthesizer.py
 ```python
 class KnowledgeSynthesizer:
-    """
-    Synthesizes search results into coherent responses using MoE routing,
-    task vector operations, and SLERP-based merging.
-    """
-    
-    async def route_query(self, query: str, synthesis_mode: str) -> ModelRoute:
-        """Route query to appropriate models using MoE-style routing."""
-        pass
-        
-    async def combine_knowledge(
-        self,
-        responses: List[Dict[str, str]],
-        operation: str = "task_vector_merge"
-    ) -> Dict[str, float]:
-        """Combine knowledge using task vector operations."""
-        pass
-        
-    async def merge_responses(
-        self,
-        responses: List[Dict[str, str]],
-        interpolation_factor: float = 0.5
-    ) -> Dict[str, float]:
-        """Merge responses using SLERP-based interpolation."""
-        pass
-        
-    async def synthesize(
+    def synthesize(
         self,
         query: str,
-        responses: List[Dict[str, str]],
-        synthesis_mode: str = "research"
-    ) -> SynthesisResult:
+        search_results: List[SearchResult],
+        contents: List[ProcessedContent]
+    ) -> SynthesizedResponse:
         """
-        Synthesize responses into coherent output using:
-        1. MoE routing for model selection
-        2. Task vector operations for knowledge combination
-        3. SLERP-based merging for response integration
-        
-        Supports multiple synthesis modes:
-        - Research: Focus on comprehensive knowledge aggregation
-        - Coding: Optimized for code-related responses
-        - Analysis: Enhanced analytical capabilities
-        - Creative: Supports creative content generation
-        """
-        pass
-```
-
-#### knowledge_aggregator.py
-```python
-class KnowledgeAggregator:
-    """
-    Aggregates knowledge from multiple sources with parallel processing
-    and source-specific handling.
-    """
-    
-    async def process_source(
-        self,
-        source: str,
-        query: str,
-        preserve_nuances: bool = True
-    ) -> Dict[str, Any]:
-        """Process a single knowledge source with nuance preservation."""
-        pass
-        
-    async def resolve_conflicts(
-        self,
-        results: List[Dict[str, Any]]
-    ) -> List[Dict[str, Any]]:
-        """Resolve conflicts between source results."""
-        pass
-        
-    async def process_parallel(
-        self,
-        query: str,
-        sources: List[str],
-        preserve_nuances: bool = True
-    ) -> AggregationResult:
-        """
-        Process multiple sources in parallel with:
-        - Source-specific processing
-        - Conflict resolution
-        - Nuance preservation
-        - Performance metrics tracking
+        Synthesize search results and content into coherent response.
         """
         pass
 ```
@@ -326,23 +237,24 @@ async def test_end_to_end_flow():
 ## Development Workflow
 
 1. Local Development
-```powershell
+```bash
 # Set up environment
-& C:\dev\venvs\multi-llm-wrapper\Scripts\Activate.ps1
+python -m venv venv
+source venv/bin/activate  # or venv\Scripts\activate on Windows
 pip install -r requirements.txt
 
-# Set environment variables (PowerShell)
-$env:BRAVE_API_KEY = "<your-key>"
-$env:MAX_RESULTS_PER_QUERY = "20"
+# Set environment variables
+set BRAVE_API_KEY=<your-key>
+set MAX_RESULTS_PER_QUERY=20
 ```
 
 2. Running Tests
-```powershell
-python -m pytest tests/
+```bash
+pytest tests/
 ```
 
 3. Local Azure Testing
-```powershell
+```bash
 az login
 az webapp up --name brave-search-aggregator --resource-group apps-rg
 ```

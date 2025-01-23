@@ -31,11 +31,9 @@ cp .env.example .env
 ```
 
 2. Configure Python Environment:
-```powershell
-# Activate virtual environment
-& C:\dev\venvs\multi-llm-wrapper\Scripts\Activate.ps1
-
-# Install dependencies
+```bash
+python -m venv venv
+source venv/bin/activate  # or venv\Scripts\activate on Windows
 pip install -r requirements.txt
 ```
 
@@ -206,7 +204,7 @@ SYNTHESIS_CONFIG = {
 ### VSCode Settings
 ```json
 {
-    "python.defaultInterpreterPath": "C:\\dev\\venvs\\multi-llm-wrapper\\Scripts\\python.exe",
+    "python.defaultInterpreterPath": "./venv/bin/python",
     "python.linting.enabled": true,
     "python.linting.pylintEnabled": true,
     "python.formatting.provider": "black",

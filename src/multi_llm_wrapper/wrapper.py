@@ -209,9 +209,22 @@ class LLMWrapper:
             
         except Exception as e:
             logger.error(f"Query failed: {type(e).__name__}: {str(e)}")
+            error_type = "general_error"
+            
+            # Map litellm errors to our error types
+            error_name = type(e).__name__
+            if "TimeoutError" in error_name:
+                error_type = "timeout"
+            elif "AuthenticationError" in error_name:
+                error_type = "auth_error"
+            elif "RateLimitError" in error_name:
+                error_type = "rate_limit"
+            elif "InvalidRequestError" in error_name:
+                error_type = "validation_error"
+            
             return self._format_error_response(
                 error=str(e),
-                error_type="general_error",
+                error_type=error_type,
                 model=model if 'model' in locals() else None,
                 provider=provider if 'provider' in locals() else None
             )
