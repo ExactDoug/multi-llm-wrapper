@@ -5,6 +5,10 @@ from typing import Dict, Any
 
 import aiohttp
 import uvicorn
+from dotenv import load_dotenv
+
+# Load test environment variables
+load_dotenv('.env.test')
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 

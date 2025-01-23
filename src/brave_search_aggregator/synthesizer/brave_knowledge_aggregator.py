@@ -1,72 +1,109 @@
-from typing import Dict, Any, List, AsyncGenerator
-import json
+from typing import AsyncGenerator, Dict, List, Optional, Union
+
 from ..analyzer.query_analyzer import QueryAnalyzer
-from .knowledge_aggregator import KnowledgeAggregator
 from ..fetcher.brave_client import BraveSearchClient
+from .knowledge_synthesizer import KnowledgeSynthesizer
+
 
 class BraveKnowledgeAggregator:
-    """
-    Bridges between LLMService and the specialized search engine knowledge components.
-    Maintains streaming compatibility while leveraging advanced processing capabilities.
-    """
-    
-    def __init__(self, brave_client: BraveSearchClient):
-        self.query_analyzer = QueryAnalyzer()
-        self.knowledge_aggregator = KnowledgeAggregator()
+    def __init__(
+        self,
+        brave_client: BraveSearchClient,
+        query_analyzer: Optional[QueryAnalyzer] = None,
+        knowledge_synthesizer: Optional[KnowledgeSynthesizer] = None,
+    ):
         self.brave_client = brave_client
+        self.query_analyzer = query_analyzer or QueryAnalyzer()
+        self.knowledge_synthesizer = knowledge_synthesizer or KnowledgeSynthesizer()
 
-    async def process_query(self, query: str) -> AsyncGenerator[Dict[str, Any], None]:
-        """
-        Process a query through the specialized search engine knowledge pipeline.
-        Returns a streaming response compatible with LLMService expectations.
-        """
+    async def process_query(
+        self, query: str
+    ) -> AsyncGenerator[Dict[str, Union[str, bool]], None]:
+        """Process a query and yield results."""
         try:
-            # 1. Analyze query
-            analysis = await self.query_analyzer.analyze_query(query)
-            search_query = analysis.search_string
+            # Get query analysis first
+            query_analysis = await self.query_analyzer.analyze(query)
 
-            # 2. Execute search
-            results = await self.brave_client.search(search_query)
+            # Get search results
+            search_results = []
+            try:
+                # Get first result to verify search works
+                search_generator = self.brave_client.search(query)
+                try:
+                    first_result = await search_generator.__anext__()
+                    search_results.append(first_result)
 
-            # 3. Process results through aggregator
-            aggregated = await self.knowledge_aggregator.process_parallel(
-                query=search_query,
-                sources=["brave_search"],
-                raw_results=results
-            )
+                    # Now that we know search works, yield initial content
+                    formatted_response = {
+                        "type": "content",
+                        "title": f"Processing query: {query}",
+                        "content": (
+                            f"Query analysis: {query_analysis}\n\n"
+                            f"Search results:\n{self._format_results(search_results)}"
+                        )
+                    }
+                    yield formatted_response
 
-            # 4. Stream formatted response
-            # First send title
-            yield {"type": "title", "title": "Brave Search"}
+                    # Get remaining results
+                    async for result in search_generator:
+                        search_results.append(result)
+                        # Yield content after each result
+                        formatted_response = {
+                            "type": "content",
+                            "title": f"Processing query: {query}",
+                            "content": (
+                                f"Query analysis: {query_analysis}\n\n"
+                                f"Search results:\n{self._format_results(search_results)}"
+                            )
+                        }
+                        yield formatted_response
 
-            # Format and stream content
-            formatted_response = []
-            formatted_response.append("### Search Results\n")
+                    # After all results, add knowledge synthesis
+                    knowledge = await self.knowledge_synthesizer.synthesize(search_results)
+                    formatted_response = {
+                        "type": "content",
+                        "title": f"Processing query: {query}",
+                        "content": (
+                            f"Query analysis: {query_analysis}\n\n"
+                            f"Search results:\n{self._format_results(search_results)}\n\n"
+                            f"Knowledge synthesis: {knowledge}"
+                        )
+                    }
+                    yield formatted_response
 
-            # Add analyzed query insights if available
-            if analysis.insights:
-                formatted_response.append("#### Query Analysis")
-                formatted_response.append(f"{analysis.insights}\n")
+                except StopAsyncIteration:
+                    # No results found
+                    yield {"type": "error", "error": "No search results found"}
+                    return
 
-            # Add aggregated results
-            for i, result in enumerate(aggregated.results, 1):
-                formatted_response.append(f"{i}. **{result.title}**")
-                formatted_response.append(f"   URL: {result.url}")
-                formatted_response.append(f"   {result.description}")
-                if result.additional_context:
-                    formatted_response.append(f"   Additional Context: {result.additional_context}")
-                formatted_response.append("")  # Empty line between results
-
-            # Add synthesis if available
-            if aggregated.synthesis:
-                formatted_response.append("### Knowledge Synthesis")
-                formatted_response.append(f"{aggregated.synthesis}\n")
-
-            content = "\n".join(formatted_response)
-            yield {"type": "content", "content": content}
-
-            # Signal completion
-            yield {"type": "done"}
+            except Exception as e:
+                # If we got any results before the error, yield them
+                if search_results:
+                    formatted_response = {
+                        "type": "content",
+                        "title": f"Processing query: {query}",
+                        "content": (
+                            f"Query analysis: {query_analysis}\n\n"
+                            f"Partial search results:\n{self._format_results(search_results)}"
+                        )
+                    }
+                    yield formatted_response
+                # Then yield the error
+                yield {"type": "error", "error": str(e)}
+                return
 
         except Exception as e:
-            yield {"type": "error", "message": str(e)}
+            # If error occurs before getting any results
+            yield {"type": "error", "error": str(e)}
+            return
+
+    def _format_results(self, results: List[Dict[str, str]]) -> str:
+        """Format search results into a readable string."""
+        formatted = []
+        for i, result in enumerate(results, 1):
+            formatted.append(
+                f"{i}. {result['title']}\n"
+                f"   URL: {result['url']}\n"
+                f"   {result['description']}\n"
+            )
+        return "\n".join(formatted)

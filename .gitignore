@@ -47,6 +47,8 @@ htmlcov/
 coverage.xml
 *.cover
 .hypothesis/
+temp/
+temp/pytest-output-*.txt
 
 # Logs
 *.log

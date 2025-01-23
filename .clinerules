@@ -32,6 +32,16 @@ Docs_Directory: c:/dev/od-dm-y/OneDrive/dev-projects/multi-llm-wrapper/docs/
    curl http://localhost:8001/config
    ```
 
+5. Start production server (if needed):
+   ```powershell
+   python -m multi_llm_wrapper.web.run
+   ```
+
+6. Verify production server:
+   ```powershell
+   curl http://localhost:8000/health
+   ```
+
 # Session Initialization Steps
 1. Read latest continuation prompt at:
    docs/brave-dev/continuation-prompts/2025-[most-recent-timestamp].md
@@ -42,6 +52,9 @@ Docs_Directory: c:/dev/od-dm-y/OneDrive/dev-projects/multi-llm-wrapper/docs/
    - "KnowledgeAggregatorImplementation" (processing status)
    - "TestServer" (infrastructure status)
    - "RateLimiter" (rate limiting status)
+   - "WebIntegration" (web service status)
+   - "StreamingVerification" (streaming status)
+   - "ErrorHandling" (error handling patterns)
 
 3. Review documentation:
    - README.md
@@ -80,6 +93,27 @@ Docs_Directory: c:/dev/od-dm-y/OneDrive/dev-projects/multi-llm-wrapper/docs/
 3. Check logs for errors and warnings
 4. Verify feature flag behavior
 5. Document test scenarios and results
+6. Run streaming verification tests
+7. Test error handling scenarios
+8. Verify web integration
+
+# Production Verification
+1. Environment Setup
+   - Verify BRAVE_SEARCH_API_KEY in .env
+   - Check rate limit configuration
+   - Verify logging setup
+
+2. Integration Testing
+   - Test streaming behavior
+   - Verify error handling
+   - Check synthesis integration
+   - Monitor API usage
+
+3. Performance Monitoring
+   - Track response times
+   - Monitor error rates
+   - Check resource usage
+   - Verify concurrent load
 
 # Small-Scale, Low-Budget, MVP, KISS Methodology
 1. Prioritize getting to the first MVP

@@ -1,264 +1,236 @@
-# Testing Strategy
+# BraveKnowledgeAggregator Testing Strategy
 
 ## Overview
-This document outlines the testing strategy for the Brave Search Knowledge Aggregator project, with a focus on real-world validation of MVP features while maintaining proper testing of advanced features.
+This document outlines the testing strategy for the BraveKnowledgeAggregator, focusing on streaming verification, error handling, and web service integration.
 
-## Current Testing Status
+## Test Environment
 
-### Successfully Tested
-1. Brave Search API Integration
-   - Endpoint connectivity verified
-   - Rate limiting confirmed working
-   - Error handling validated
-   - Response processing tested
+### Local Development (Port 8001)
+- Isolated test environment
+- Full test coverage
+- Mock API responses
+- Feature flag support
 
-2. Knowledge Aggregation
-   - Parallel processing verified
-   - Source attribution working
-   - Result formatting validated
-   - Feature flags tested
+### Production (Port 8000)
+- Live API integration
+- Rate limiting
+- Error monitoring
+- Performance tracking
 
-3. Test Infrastructure
-   - Separate test server operational
-   - Configuration management working
-   - Logging system verified
-   - Health checks implemented
+## Test Categories
 
-## Testing Infrastructure
+### 1. Unit Tests
+- Component isolation
+- Mock dependencies
+- Error handling
+- Edge cases
 
-### Production Environment
-- Running on port 8000
-- Active staff usage
-- Must remain uninterrupted
-- Production configuration
+### 2. Integration Tests
+- Component interaction
+- API integration
+- Error propagation
+- Data flow
 
-### Testing Environment
-- Separate service on port 8001
-- Isolated configuration
-- Independent monitoring
-- Feature flag controlled
-- Test-specific logging
+### 3. Streaming Tests
+- Response timing
+- Chunk sizes
+- Error handling
+- Load testing
 
-## Testing Components
+### 4. Web Integration Tests
+- Service integration
+- UI interaction
+- Error display
+- Performance
 
-### 1. BraveSearchClient Testing
+## Test Implementation
+
+### 1. Streaming Verification Tests
 ```python
-async def test_search_functionality():
-    """Test basic search functionality"""
-    client = BraveSearchClient(session, config)
-    results = await client.search("test query")
-    assert len(results) > 0
-    assert all(r.get('title') and r.get('url') for r in results)
-
-async def test_rate_limiting():
-    """Test rate limiting behavior"""
-    client = BraveSearchClient(session, config)
-    with pytest.raises(BraveSearchError, match="Rate limit exceeded"):
-        for _ in range(config.rate_limit + 1):
-            await client.search("test")
+@pytest.mark.asyncio
+async def test_streaming_response_timing():
+    """Test response timing characteristics."""
+    start_time = time.time()
+    first_chunk_time = None
+    last_chunk_time = None
+    chunk_count = 0
+    
+    async for result in aggregator.process_query("test query"):
+        if chunk_count == 0:
+            first_chunk_time = time.time() - start_time
+        last_chunk_time = time.time() - start_time
+        chunk_count += 1
+    
+    assert first_chunk_time < 1.0  # First chunk within 1 second
+    assert last_chunk_time < 5.0   # Complete within 5 seconds
+    assert chunk_count >= 3        # At least 3 chunks
 ```
 
-### 2. Knowledge Aggregator Testing
+### 2. Error Handling Tests
 ```python
-async def test_parallel_processing():
-    """Test parallel processing of results"""
-    aggregator = KnowledgeAggregator()
-    results = await aggregator.process_parallel(
-        query="test",
-        sources=["brave_search"],
-        raw_results=sample_results
-    )
-    assert results.all_sources_processed
-    assert results.content
-```
-
-### 3. Test Server Testing
-```python
-async def test_search_endpoint():
-    """Test search endpoint functionality"""
-    response = await client.post(
-        "/search",
-        json={"query": "test query"}
-    )
-    assert response.status_code == 200
-    assert "raw_results" in response.json()
-    assert "processed_results" in response.json()
-```
-
-## Testing Priorities
-
-### 1. Real-World Testing
-- Test with actual Brave Search API
-- Verify parallel processing with real queries
-- Test grid integration in production environment
-- Monitor actual performance characteristics
-- Validate error handling with real scenarios
-
-### 2. Feature Flag Testing
-- Test basic functionality with advanced features disabled
-- Verify advanced features when enabled
-- Test fallback mechanisms
-- Validate feature flag configuration
-- Monitor feature-specific metrics
-
-### 3. Performance Testing
-- Monitor response times
-- Track resource usage
-- Measure parallel processing efficiency
-- Validate rate limiting
-- Test error recovery times
-
-## Testing Methodology
-
-### 1. Unit Testing
-```python
-def test_rate_limiter():
-    limiter = RateLimiter(max_rate=20)
-    assert limiter.tokens == 20
-    assert limiter.max_rate == 20
-```
-
-### 2. Integration Testing
-```python
-async def test_end_to_end():
-    """Test complete search and processing flow"""
-    query = "latest developments in AI"
-    results = await client.search(query)
-    processed = await aggregator.process_parallel(
-        query=query,
-        sources=["brave_search"],
-        raw_results=results
-    )
-    assert processed.content
-    assert processed.all_sources_processed
+@pytest.mark.asyncio
+async def test_streaming_error_handling():
+    """Test error handling during streaming."""
+    mock_client.search.side_effect = Exception("API Error")
+    
+    results = []
+    async for result in aggregator.process_query("test query"):
+        results.append(result)
+    
+    assert len(results) == 1
+    assert results[0]['type'] == 'error'
+    assert 'API Error' in results[0]['error']
 ```
 
 ### 3. Load Testing
 ```python
-async def test_concurrent_requests():
-    """Test handling of concurrent requests"""
-    tasks = [
-        client.search("test query")
-        for _ in range(10)
+@pytest.mark.asyncio
+async def test_streaming_concurrent_load():
+    """Test streaming performance under load."""
+    concurrent_queries = 5
+    tasks = [process_query() for _ in range(concurrent_queries)]
+    results = await asyncio.gather(*tasks)
+    
+    assert all(len(r) >= 3 for r in results)
+    assert all(any(item['type'] == 'content' for item in r) for r in results)
+```
+
+### 4. Web Integration Tests
+```python
+@pytest.mark.asyncio
+async def test_web_integration():
+    """Test web service integration."""
+    response = await client.get("/stream/9?query=test")
+    assert response.status_code == 200
+    assert response.headers["content-type"] == "text/event-stream"
+```
+
+## Test Coverage Requirements
+
+### 1. Core Functionality
+- Query processing: 100%
+- Error handling: 100%
+- Response formatting: 100%
+
+### 2. Streaming Behavior
+- Response timing: 100%
+- Chunk handling: 100%
+- Error propagation: 100%
+
+### 3. Web Integration
+- Service integration: 90%
+- Error handling: 100%
+- Response formatting: 100%
+
+### 4. Production Features
+- Rate limiting: 80%
+- Error monitoring: 80%
+- Health checks: 80%
+
+## Test Fixtures
+
+### 1. Mock Client
+```python
+@pytest.fixture
+def mock_brave_client():
+    client = AsyncMock(spec=BraveSearchClient)
+    results = [
+        {
+            'title': 'Test Result 1',
+            'url': 'https://example.com/1',
+            'description': 'Description 1'
+        },
+        {
+            'title': 'Test Result 2',
+            'url': 'https://example.com/2',
+            'description': 'Description 2'
+        }
     ]
-    results = await asyncio.gather(*tasks, return_exceptions=True)
-    assert all(not isinstance(r, Exception) for r in results)
+    client.search.return_value.__aiter__.return_value = iter(results)
+    return client
 ```
 
-## Error Handling Testing
-
-### 1. API Errors
+### 2. Mock Error Generator
 ```python
-async def test_api_errors():
-    """Test handling of API errors"""
-    with patch.object(session, 'get') as mock_get:
-        mock_get.return_value.__aenter__.return_value.status = 500
-        with pytest.raises(BraveSearchError):
-            await client.search("test")
+class ErrorAfterOneResult:
+    def __init__(self):
+        self.yielded = False
+
+    def __aiter__(self):
+        return self
+
+    async def __anext__(self):
+        if not self.yielded:
+            self.yielded = True
+            return {'title': 'Test Result', 'url': 'https://example.com', 'description': 'Description'}
+        raise Exception("Simulated API Error")
 ```
 
-### 2. Rate Limiting
-```python
-async def test_rate_limit_recovery():
-    """Test rate limit recovery"""
-    limiter = RateLimiter(max_rate=2)
-    await limiter.acquire()  # First request
-    await asyncio.sleep(1)   # Wait for token recovery
-    await limiter.acquire()  # Should succeed
+## Test Execution
+
+### 1. Development Environment
+```bash
+# Run all tests
+pytest tests/brave_search_aggregator
+
+# Run specific test file
+pytest tests/brave_search_aggregator/test_brave_knowledge_aggregator.py
+
+# Run with coverage
+pytest --cov=src/brave_search_aggregator
 ```
 
-## Monitoring and Metrics
+### 2. Production Environment
+```bash
+# Run integration tests
+pytest tests/brave_search_aggregator/test_integration.py
 
-### 1. Performance Metrics
-- Response times
-- Processing times
+# Run load tests
+pytest tests/brave_search_aggregator/test_load.py
+```
+
+## Test Monitoring
+
+### 1. Coverage Reports
+- Generate HTML reports
+- Track coverage trends
+- Identify gaps
+
+### 2. Test Results
+- Track pass/fail rates
+- Monitor execution time
+- Log error patterns
+
+### 3. Performance Metrics
+- Response timing
 - Resource usage
 - Error rates
-- API quota usage
-
-### 2. Feature Metrics
-- Feature flag usage
-- Processing success rates
-- Source reliability
-- Result quality
-
-## Test Environment Setup
-
-### 1. Configuration
-```python
-TEST_CONFIG = {
-    'max_results_per_query': 20,
-    'timeout_seconds': 30,
-    'rate_limit': 20,
-    'feature_flags': {
-        'parallel_processing': True,
-        'advanced_synthesis': False
-    }
-}
-```
-
-### 2. Test Data
-```python
-SAMPLE_RESULTS = [
-    {
-        'title': 'Test Result 1',
-        'url': 'https://example.com/1',
-        'description': 'Test description 1'
-    },
-    {
-        'title': 'Test Result 2',
-        'url': 'https://example.com/2',
-        'description': 'Test description 2'
-    }
-]
-```
 
 ## Continuous Integration
 
-### 1. Test Execution
-```yaml
-test:
-  script:
-    - python -m pytest tests/
-    - python -m pytest tests/integration/ --runintegration
-```
+### 1. GitHub Actions
+- Run tests on push
+- Generate coverage reports
+- Check code quality
 
-### 2. Coverage Requirements
-- Minimum 80% line coverage
-- 100% coverage of error handling
-- 100% coverage of API integration
-- 90% coverage of processing logic
+### 2. Production Deployment
+- Run integration tests
+- Verify streaming behavior
+- Check error handling
 
-## Documentation
+## Test Documentation
 
-### 1. Test Results
-- Document all test runs
-- Track performance metrics
-- Record error patterns
-- Note feature behavior
+### 1. Test Cases
+- Document purpose
+- List requirements
+- Include examples
 
-### 2. Test Cases
-- Maintain test documentation
-- Update test scenarios
-- Document edge cases
-- Track test coverage
+### 2. Coverage Reports
+- Track metrics
+- Identify gaps
+- Plan improvements
 
-## Next Steps
-
-### 1. Additional Testing
-- Implement load testing
-- Add performance benchmarks
-- Expand integration tests
-- Add security testing
-
-### 2. Monitoring
-- Set up continuous monitoring
-- Implement alerting
-- Track usage patterns
-- Monitor error rates
-
-### 3. Documentation
-- Update test documentation
-- Add troubleshooting guides
-- Document common issues
-- Maintain test scenarios
+### 3. Error Logs
+- Document patterns
+- Track resolutions
+- Update tests

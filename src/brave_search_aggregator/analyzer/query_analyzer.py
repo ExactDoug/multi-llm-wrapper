@@ -14,6 +14,7 @@ class QueryAnalysis:
     reason_unsuitable: Optional[str] = None
     sub_queries: List[str] = None
     possible_interpretations: List[str] = None
+    insights: Optional[str] = None
 
     def __post_init__(self):
         """Initialize optional lists."""
@@ -37,7 +38,7 @@ class QueryAnalyzer:
                  'from', 'has', 'he', 'in', 'is', 'it', 'its', 'of', 'on',
                  'that', 'the', 'to', 'was', 'were', 'will', 'with'}
 
-    def analyze_query(self, query: str) -> QueryAnalysis:
+    async def analyze_query(self, query: str) -> QueryAnalysis:
         """
         Analyze a search query for suitability and complexity.
 
@@ -77,13 +78,27 @@ class QueryAnalyzer:
         # Generate sub-queries for complex queries
         sub_queries = self._generate_sub_queries(query) if complexity == "complex" else []
 
+        # Generate insights based on analysis
+        insights = []
+        if complexity == "complex":
+            insights.append(f"Query Complexity: {complexity}")
+            if sub_queries:
+                insights.append(f"Sub-queries identified: {len(sub_queries)}")
+        if is_ambiguous:
+            insights.append("Query contains ambiguous terms")
+            if possible_interpretations:
+                insights.append(f"Possible interpretations: {', '.join(possible_interpretations)}")
+        
+        insights_text = "\n".join(insights) if insights else None
+
         return QueryAnalysis(
             is_suitable_for_search=True,
             search_string=query,
             complexity=complexity,
             is_ambiguous=is_ambiguous,
             possible_interpretations=possible_interpretations,
-            sub_queries=sub_queries
+            sub_queries=sub_queries,
+            insights=insights_text
         )
 
     def extract_search_terms(self, query: str) -> List[str]:

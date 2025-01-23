@@ -1,257 +1,229 @@
-# Brave Search Knowledge Aggregator - Implementation Guide
+# BraveKnowledgeAggregator Implementation Guide
 
-## Implementation Progress
+## Overview
+The BraveKnowledgeAggregator provides enhanced search result processing with streaming support, error handling, and integration with the multi-llm synthesis web service.
 
-### Current Status (January 22, 2025)
+## Components
 
-#### Successfully Implemented and Tested
-- QueryAnalyzer (specialized for search engine knowledge sources)
-- Knowledge Aggregator with parallel processing
-- Test server infrastructure
-- Feature flags system
-- Error handling and logging
+### Core Components
+1. BraveKnowledgeAggregator
+   - Handles search result processing
+   - Manages streaming responses
+   - Integrates query analysis and knowledge synthesis
+   - Provides robust error handling
 
-#### Real-World Testing Results
-- QueryAnalyzer validation complete (83% code coverage)
-- Knowledge aggregation processing validated
-- Parallel testing infrastructure operational
-- Rate limiting confirmed working
+2. QueryAnalyzer (Optional)
+   - Analyzes search queries
+   - Provides query insights
+   - Enhances search context
 
-### Component Implementation Details
+3. KnowledgeSynthesizer (Optional)
+   - Synthesizes search results
+   - Generates knowledge insights
+   - Enhances result context
 
-#### 1. Configuration Management
+## Implementation Details
+
+### Streaming Support
 ```python
-# Using Pydantic models for configuration
-class TestFeatureFlags(BaseModel):
-    """Feature flag configuration with schema validation."""
-    advanced_synthesis: bool = Field(...)
-    parallel_processing: bool = Field(...)
-    # Additional feature flags...
-
-class TestServerConfig(BaseModel):
-    """Server configuration with schema validation."""
-    host: str = Field(...)
-    port: int = Field(...)
-    features: TestFeatureFlags = Field(...)
-    # Additional settings...
+async def process_query(self, query: str) -> AsyncGenerator[Dict[str, Union[str, bool]], None]:
+    """Process a query and yield results."""
+    try:
+        # Get first result to verify search works
+        search_generator = self.brave_client.search(query)
+        try:
+            first_result = await search_generator.__anext__()
+            # Yield content after verifying search works
+            yield formatted_response
+            # Continue processing remaining results
+            async for result in search_generator:
+                # Yield content after each result
+                yield formatted_response
 ```
 
-Key Features:
-- Pydantic model validation
-- Automatic schema generation
-- Documentation via Field descriptions
-- Example configurations
-- Environment variable loading
+### Error Handling
+1. Early Error Detection
+   - Verify search functionality before yielding content
+   - Handle StopAsyncIteration for no results
+   - Catch and handle API errors
 
-#### 2. QueryAnalyzer
+2. Partial Results
+   - Yield partial content before errors when available
+   - Include error details in response
+   - Maintain proper response structure
+
+3. Error Response Format
 ```python
-class QueryAnalyzer:
-    """
-    Specialized component for analyzing and optimizing search engine queries.
-    NOT used for regular LLM interactions - only for search engine knowledge sources.
-    """
-    
-    def __init__(self):
-        self.MAX_QUERY_LENGTH = 500
-        self.ARITHMETIC_OPERATORS = {'+', '-', '*', '/', '='}
-        self.COMPLEX_INDICATORS = {'compare', 'between', 'relationship', 'correlation', 'difference'}
+{
+    "type": "error",
+    "error": str(error_message)
+}
 ```
 
-Key Features:
-- Search engine query specialization
-- Query validation and optimization
-- Error handling
-- Configurable parameters
-- Reusable for future search engine knowledge sources
+### Web Service Integration
+1. Optional Dependencies
+   - QueryAnalyzer and KnowledgeSynthesizer are optional
+   - Default implementations provided
+   - Flexible configuration
 
-#### 2. KnowledgeAggregator
+2. Response Format
 ```python
-class KnowledgeAggregator:
-    """Aggregates knowledge from multiple sources with parallel processing."""
-    
-    async def process_parallel(
-        self,
-        query: str,
-        sources: List[str],
-        preserve_nuances: bool = True,
-        raw_results: List[Dict[str, Any]] = None
-    ) -> AggregationResult:
+{
+    "type": "content",
+    "title": str,
+    "content": str
+}
 ```
 
-Key Features:
-- Parallel processing of sources
-- Result structuring and formatting
-- Source attribution preservation
-- Metrics collection
-- Feature flag support
+3. Integration Points
+   - Port 8000 for production
+   - Streaming response handling
+   - Error propagation
+   - Synthesis integration
 
-#### 3. Test Server
+## Production Setup
+
+### Environment Configuration
+1. API Key Setup
+```bash
+# .env file
+BRAVE_SEARCH_API_KEY=your_api_key_here
+```
+
+2. Rate Limiting
 ```python
-app = FastAPI(
-    title="Brave Search Knowledge Aggregator Test Server",
-    description="Test server with feature flags and configuration management"
-)
+# Configure in config.py
+max_requests_per_second = 20
+timeout_seconds = 30
+```
 
-# Configuration with schema validation
-config = TestServerConfig.from_env()
+3. Logging Configuration
+```python
+# Configure in config.py
+log_level = "INFO"
+log_format = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+```
 
-@app.get("/health")
-async def health_check() -> Dict[str, Any]:
-    """Health check endpoint with feature flag status."""
-    return {
-        "status": "healthy",
-        "environment": "test",
-        "port": config.port,
-        "feature_flags": config.features.get_enabled_features()
-    }
+### Package Installation
+```bash
+pip install -e .
+```
 
-@app.get("/config")
-async def get_config() -> Dict[str, Any]:
-    """Get current configuration with schema examples."""
-    return {
-        "max_results_per_query": config.max_results_per_query,
-        "timeout_seconds": config.timeout_seconds,
-        "rate_limit": config.rate_limit,
-        "feature_flags": config.features.get_enabled_features()
-    }
+### Server Configuration
+1. Production Settings
+```python
+# Configure in app.py
+app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
+templates = Jinja2Templates(directory=str(templates_dir))
+```
 
-@app.post("/search")
-async def search(request: SearchRequest) -> Dict[str, Any]:
-    """Execute a search query with parallel processing."""
-    results = await client.search(request.query)
-    processed_results = await aggregator.process_parallel(
-        query=request.query,
-        sources=["brave_search"],
-        preserve_nuances=True,
-        raw_results=results
+2. Error Monitoring
+```python
+# Configure error handlers
+@app.exception_handler(Exception)
+async def exception_handler(request: Request, exc: Exception):
+    return JSONResponse(
+        status_code=500,
+        content={"message": str(exc)}
     )
 ```
 
-Key Features:
-- Pydantic model configuration
-- OpenAPI schema generation
-- Feature flag integration
-- Health monitoring
-- Configuration inspection
-- Detailed logging
-- Error handling
+## Testing Requirements
 
-### Configuration Management
+### Streaming Tests
+1. Response Timing
+   - First chunk within 1 second
+   - Complete within 5 seconds
+   - At least 3 chunks
 
-#### Environment Variables
-```plaintext
-BRAVE_API_KEY=your_api_key_here
-MAX_RESULTS_PER_QUERY=20
-TIMEOUT_SECONDS=30
-RATE_LIMIT=20
-FEATURE_PARALLEL_PROCESSING=true
-FEATURE_ADVANCED_SYNTHESIS=false
-```
+2. Chunk Size
+   - Under 16KB per chunk
+   - Non-empty content
 
-#### Feature Flags
-- parallel_processing: Enables parallel processing (MVP feature)
-- advanced_synthesis: Controls advanced synthesis features
-- moe_routing: Controls MoE routing framework
-- task_vectors: Enables task vector operations
-- slerp_merging: Enables SLERP-based merging
+3. Error Handling
+   - Yield partial content
+   - Include error message
+   - Proper response format
 
-### Error Handling
+4. Load Testing
+   - 5 concurrent queries
+   - Complete within 10 seconds
+   - All queries receive responses
 
-#### API Errors
+## Monitoring Setup
+
+### Error Tracking
+1. Log Configuration
 ```python
-try:
-    async with self.session.get(
-        self.base_url,
-        headers=headers,
-        params=params,
-        timeout=self.timeout
-    ) as response:
-        if response.status == 200:
-            data = await response.json()
-            return data.get("web", {}).get("results", [])
-        else:
-            error_text = await response.text()
-            raise BraveSearchError(f"API error: {response.status} - {error_text}")
-except Exception as e:
-    raise BraveSearchError(f"Search failed: {str(e)}")
+logging.config.dictConfig({
+    'version': 1,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'standard'
+        },
+        'file': {
+            'class': 'logging.FileHandler',
+            'filename': 'production.log',
+            'formatter': 'standard'
+        }
+    }
+})
 ```
 
-#### Rate Limiting
+2. Metrics Collection
 ```python
-if self.tokens < 1:
-    raise BraveSearchError("Rate limit exceeded")
+# Track API usage
+api_calls = 0
+error_count = 0
+average_response_time = 0
 ```
 
-### Testing Infrastructure
-
-#### Test Server Launch
-```powershell
-# Launch test server
-python -m brave_search_aggregator.test_server
+### Health Checks
+1. API Status
+```python
+@app.get("/health")
+async def health_check():
+    return {"status": "healthy"}
 ```
 
-#### Test Environment
-- Separate port (8001)
-- Independent configuration
-- Isolated logging
-- Feature flag control
+2. Rate Limit Monitoring
+```python
+@app.middleware("http")
+async def rate_limit_middleware(request: Request, call_next):
+    # Track and enforce rate limits
+```
 
-### Real-World Testing Results
+## Troubleshooting Guide
 
-#### QueryAnalyzer
-- Successfully validates queries
-- Optimizes search strings
-- Handles errors appropriately
-- 83% code coverage achieved
+### Common Issues
+1. API Key Issues
+   - Verify key in .env
+   - Check rate limits
+   - Monitor usage
 
-#### Knowledge Aggregation
-- Parallel processing verified
-- Source attribution maintained
-- Metrics collection working
-- Feature flags operational
+2. Streaming Issues
+   - Check chunk sizes
+   - Monitor timing
+   - Verify error handling
 
-### Next Steps
+3. Integration Issues
+   - Verify dependencies
+   - Check configurations
+   - Monitor logs
 
-1. LLMService Integration
-   - Integrate with multi-llm-wrapper
-   - Update grid display handling
-   - Implement error handling
-   - Add integration tests
+### Error Resolution
+1. API Errors
+   - Check API key
+   - Verify rate limits
+   - Review error logs
 
-2. Documentation Updates
-   - Update API integration details
-   - Add configuration guidelines
-   - Document testing procedures
-   - Create troubleshooting guide
+2. Streaming Errors
+   - Check network
+   - Verify timeouts
+   - Monitor memory
 
-3. Monitoring Implementation
-   - Error rate tracking
-   - Performance metrics
-   - Usage statistics
-   - API quota monitoring
-
-### Implementation Guidelines
-
-1. Code Organization
-   - Maintain modular structure
-   - Follow SOLID principles
-   - Keep functions focused
-   - Document complex logic
-
-2. Error Handling
-   - Use custom exceptions
-   - Provide detailed error messages
-   - Implement proper logging
-   - Handle edge cases
-
-3. Testing
-   - Write unit tests
-   - Perform integration testing
-   - Document test scenarios
-   - Monitor real-world usage
-
-4. Documentation
-   - Keep docs updated
-   - Include examples
-   - Document configuration
-   - Provide troubleshooting guides
+3. Integration Errors
+   - Check dependencies
+   - Verify configurations
+   - Review logs
