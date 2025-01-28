@@ -4,10 +4,10 @@ Mode: Code
 Directory: c:/dev/od-dm-y/OneDrive/dev-projects/multi-llm-wrapper/src/brave_search_aggregator
 Docs_Directory: c:/dev/od-dm-y/OneDrive/dev-projects/multi-llm-wrapper/docs/brave-dev/knowledge-aggregator
 
-Parent-Project: 
+Parent-Project:
 Mode: Architect
 Directory: c:/dev/od-dm-y/OneDrive/dev-projects/multi-llm-wrapper
-Docs_Directory: c:/dev/od-dm-y/OneDrive/dev-projects/multi-llm-wrapper/docs/
+Docs_Directory: c:/dev/od-dm-y/OneDrive/dev-projects/multi-llm-wrapper/docs
 
 # Environment Setup
 1. Activate Python virtual environment:
@@ -152,4 +152,16 @@ is executing in a scenario extremely similar to the production environment.
 - Using PowerShell for Windows environment
 - Virtual environment required for development
 - Github username is exactdoug
+
+# Temporary Files and Development Session Writeups
+Temporary files should be moved to:
+C:\dev\temp\{project_name}
+
+Development session writeups should be moved to:
+C:\dev\dev-session-writeups\{project_name}
+
+# Project Documentation
+Project documentation should remain in the project folders:
+c:/dev/od-dm-y/OneDrive/dev-projects/multi-llm-wrapper/docs
+
 </task>

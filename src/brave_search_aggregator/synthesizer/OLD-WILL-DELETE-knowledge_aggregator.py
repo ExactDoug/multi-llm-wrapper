@@ -35,8 +35,7 @@ class SourceConfig:
 
 class KnowledgeAggregator:
     """
-    Aggregates knowledge from multiple sources with parallel processing
-    and source-specific handling.
+    Aggregates knowledge from multiple sources with parallel processing.
     """
     
     def __init__(self):
@@ -61,7 +60,7 @@ class KnowledgeAggregator:
                 max_retries=2
             )
         }
-        self._raw_results = {}  # Store raw results for processing
+        self._raw_results = {}
 
     def _process_brave_search_results(self, results: List[Dict[str, Any]]) -> str:
         """Process raw Brave Search results into a structured format."""
@@ -87,17 +86,7 @@ class KnowledgeAggregator:
         query: str,
         preserve_nuances: bool = True
     ) -> Dict[str, Any]:
-        """
-        Process a single knowledge source.
-        
-        Args:
-            source: Source identifier
-            query: Query to process
-            preserve_nuances: Whether to preserve source-specific nuances
-            
-        Returns:
-            Processed result from source
-        """
+        """Process a single knowledge source."""
         config = self.source_configs.get(source)
         if not config:
             raise ValueError(f"Unknown source: {source}")
@@ -105,12 +94,10 @@ class KnowledgeAggregator:
         logger.debug(f"Processing source: {source}")
         
         if source == "brave_search":
-            # Use stored raw results for Brave Search
             raw_results = self._raw_results.get(query, [])
             content = self._process_brave_search_results(raw_results)
             confidence = config.processing_weight
             
-            # Store metrics about the processing
             metrics = {
                 "result_count": len(raw_results),
                 "confidence": confidence
@@ -140,16 +127,7 @@ class KnowledgeAggregator:
         self,
         results: List[Dict[str, Any]]
     ) -> List[Dict[str, Any]]:
-        """
-        Resolve conflicts between source results.
-        
-        Args:
-            results: List of source results
-            
-        Returns:
-            Resolved results
-        """
-        # Sort by confidence and result count (if available)
+        """Resolve conflicts between source results."""
         return sorted(
             results,
             key=lambda x: (
@@ -166,46 +144,29 @@ class KnowledgeAggregator:
         preserve_nuances: bool = True,
         raw_results: List[Dict[str, Any]] = None
     ) -> AggregationResult:
-        """
-        Process multiple sources in parallel.
-        
-        Args:
-            query: Query to process
-            sources: List of sources to process
-            preserve_nuances: Whether to preserve source-specific nuances
-            raw_results: Optional raw results from Brave Search
-            
-        Returns:
-            Aggregated result
-        """
+        """Process multiple sources in parallel."""
         start_time = asyncio.get_event_loop().time()
         
-        # Store raw results if provided
         if raw_results is not None:
             self._raw_results[query] = raw_results
         
-        # Create tasks for parallel processing
         tasks = [
             self.process_source(source, query, preserve_nuances)
             for source in sources
         ]
         
-        # Wait for all tasks to complete
         results = await asyncio.gather(
             *tasks,
             return_exceptions=True
         )
         
-        # Filter out errors and successful results
         successful_results = [
             result for result in results
             if not isinstance(result, Exception)
         ]
         
-        # Resolve any conflicts
         resolved_results = await self.resolve_conflicts(successful_results)
         
-        # Calculate source metrics
         source_metrics = {
             result["source"]: {
                 "confidence": result.get("confidence", 0),
@@ -214,7 +175,6 @@ class KnowledgeAggregator:
             for result in resolved_results
         }
         
-        # Combine content preserving nuances if requested
         combined_content = "\n\n".join([
             f"Source: {result['source']}\n{result['content']}"
             for result in resolved_results
@@ -223,7 +183,6 @@ class KnowledgeAggregator:
         end_time = asyncio.get_event_loop().time()
         processing_time = end_time - start_time
         
-        # Clean up stored results
         self._raw_results.pop(query, None)
         
         return AggregationResult(

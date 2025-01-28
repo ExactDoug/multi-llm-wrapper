@@ -1,0 +1,9 @@
+model_list:
+  - model_name: groq-llama3-8b-8192
+    litellm_params:
+      model: groq/llama3-8b-8192
+      api_key: "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"
+  - model_name: deepseek-r1-distill-llama-70b
+    litellm_params:
+      model: groq/deepseek-r1-distill-llama-70b
+      api_key: "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"

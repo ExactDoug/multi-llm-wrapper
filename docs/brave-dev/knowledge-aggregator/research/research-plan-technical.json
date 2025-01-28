@@ -1,0 +1,202 @@
+{
+    "async_iterator_patterns": {
+        "current_implementation": {
+            "description": "Basic async generator with direct coroutine returns",
+            "issues": [
+                "Improper awaiting of iterator constructor",
+                "Inconsistent async method chain",
+                "List vs iterator type mismatches"
+            ]
+        },
+        "research_topics": [
+            {
+                "topic": "Python Async Iterator Protocol",
+                "search_queries": [
+                    "python async iterator protocol best practices",
+                    "implementing __aiter__ and __anext__ in python",
+                    "async generator vs async iterator differences",
+                    "python async iterator chain patterns"
+                ],
+                "verification_needs": [
+                    "Proper method signatures",
+                    "Correct awaiting patterns",
+                    "Error propagation approach",
+                    "Resource cleanup handling"
+                ]
+            },
+            {
+                "topic": "Streaming Pipeline Architecture",
+                "search_queries": [
+                    "python async streaming pipeline patterns",
+                    "async iterator chain architecture",
+                    "python streaming data processing patterns",
+                    "async pipeline error handling python"
+                ],
+                "verification_needs": [
+                    "Pipeline component interfaces",
+                    "Data flow patterns",
+                    "Backpressure handling",
+                    "Pipeline monitoring points"
+                ]
+            }
+        ]
+    },
+    "streaming_implementation": {
+        "current_approach": {
+            "description": "Server-Sent Events with JSON messages",
+            "concerns": [
+                "Message format standardization",
+                "Timing of updates",
+                "Resource management",
+                "Client compatibility"
+            ]
+        },
+        "research_topics": [
+            {
+                "topic": "SSE Best Practices",
+                "search_queries": [
+                    "server sent events python fastapi",
+                    "sse vs websockets streaming data",
+                    "sse message format standards",
+                    "sse error handling patterns"
+                ],
+                "verification_needs": [
+                    "Message format efficiency",
+                    "Connection management",
+                    "Client reconnection handling",
+                    "Error recovery approaches"
+                ]
+            },
+            {
+                "topic": "Streaming Response Patterns",
+                "search_queries": [
+                    "fastapi streaming response patterns",
+                    "python async streaming response",
+                    "streaming api best practices",
+                    "real-time data streaming patterns"
+                ],
+                "verification_needs": [
+                    "Response format standards",
+                    "Timing optimization",
+                    "Resource management",
+                    "Error handling approaches"
+                ]
+            }
+        ]
+    },
+    "memory_monitoring": {
+        "requirements": {
+            "limit": "10MB per request",
+            "concerns": [
+                "Accurate measurement",
+                "Minimal overhead",
+                "Real-time tracking",
+                "Resource cleanup"
+            ]
+        },
+        "research_topics": [
+            {
+                "topic": "Python Memory Profiling",
+                "search_queries": [
+                    "python memory profiling async applications",
+                    "memory monitoring streaming processes",
+                    "python memory usage tracking tools",
+                    "real-time memory monitoring python"
+                ],
+                "verification_needs": [
+                    "Measurement accuracy",
+                    "Performance impact",
+                    "Integration approach",
+                    "Cleanup verification"
+                ]
+            },
+            {
+                "topic": "Resource Management",
+                "search_queries": [
+                    "python async resource management patterns",
+                    "memory leak prevention async python",
+                    "streaming data memory optimization",
+                    "python garbage collection async"
+                ],
+                "verification_needs": [
+                    "Resource cleanup timing",
+                    "Memory usage patterns",
+                    "Leak detection methods",
+                    "Optimization techniques"
+                ]
+            }
+        ]
+    },
+    "performance_measurement": {
+        "requirements": {
+            "timing_thresholds": {
+                "first_status": "100ms",
+                "first_result": "1s",
+                "source_selection": "3s"
+            },
+            "concerns": [
+                "Accurate timing",
+                "Minimal overhead",
+                "Consistent measurement",
+                "Meaningful metrics"
+            ]
+        },
+        "research_topics": [
+            {
+                "topic": "Response Time Measurement",
+                "search_queries": [
+                    "python async response time measurement",
+                    "streaming api latency monitoring",
+                    "real-time performance metrics python",
+                    "async request timing patterns"
+                ],
+                "verification_needs": [
+                    "Measurement precision",
+                    "Overhead impact",
+                    "Metric collection",
+                    "Analysis approach"
+                ]
+            },
+            {
+                "topic": "Performance Optimization",
+                "search_queries": [
+                    "python async streaming optimization",
+                    "fastapi performance tuning",
+                    "async pipeline optimization patterns",
+                    "streaming data performance python"
+                ],
+                "verification_needs": [
+                    "Bottleneck identification",
+                    "Optimization strategies",
+                    "Trade-off analysis",
+                    "Verification methods"
+                ]
+            }
+        ]
+    },
+    "implementation_dependencies": {
+        "current_stack": [
+            "Python 3.12",
+            "FastAPI",
+            "aiohttp",
+            "pydantic"
+        ],
+        "research_topics": [
+            {
+                "topic": "Stack Capabilities",
+                "search_queries": [
+                    "fastapi streaming capabilities",
+                    "aiohttp async streaming features",
+                    "python 3.12 async improvements",
+                    "pydantic streaming validation"
+                ],
+                "verification_needs": [
+                    "Feature availability",
+                    "Version compatibility",
+                    "Performance characteristics",
+                    "Known limitations"
+                ]
+            }
+        ]
+    }
+}

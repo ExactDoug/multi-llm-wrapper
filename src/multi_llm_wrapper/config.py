@@ -35,7 +35,7 @@ class PerplexityConfig(ProviderConfig):
 class OpenAIConfig(ProviderConfig):
     """OpenAI-specific configuration"""
     organization_id: Optional[str] = None
-    
+
     def __post_init__(self):
         self.model_map = {
             "gpt-4": "gpt-4",
@@ -66,7 +66,8 @@ class GroqProxyConfig(ProviderConfig):
     base_url: str = "http://localhost:8000"  # Default proxy URL
     def __post_init__(self):
         self.model_map = {
-            "llama2-70b-8192": "llama2-70b-8192" # Maps internal model name to proxy's expected model name, can be the same
+            "llama2-70b-8192": "groq/llama2-70b-8192", # Maps internal model name to proxy's expected model name, can be the same
+            "deepseek-r1-distill-llama-70b": "groq/deepseek-r1-distill-llama-70b"
         }
 
 @dataclass
@@ -83,7 +84,7 @@ class WrapperConfig:
     perplexity: PerplexityConfig = field(default_factory=PerplexityConfig)
     gemini: GeminiConfig = field(default_factory=GeminiConfig)
     brave_search: BraveConfig = field(default_factory=lambda: BraveConfig(api_key=None))
-    
+
     def __post_init__(self):
         """Load environment variables and validate configuration"""
         if not any([
@@ -95,7 +96,7 @@ class WrapperConfig:
             os.getenv("BRAVE_SEARCH_API_KEY")
         ]):
             load_dotenv()
-            
+
         # Load API keys from environment
         self.anthropic.api_key = self.anthropic.api_key or os.getenv("ANTHROPIC_API_KEY")
         self.openai.api_key = self.openai.api_key or os.getenv("OPENAI_API_KEY")
@@ -104,27 +105,27 @@ class WrapperConfig:
         self.perplexity.api_key = self.perplexity.api_key or os.getenv("PERPLEXITY_API_KEY")
         self.gemini.api_key = self.gemini.api_key or os.getenv("GEMINI_API_KEY")
         self.brave_search.api_key = self.brave_search.api_key or os.getenv("BRAVE_SEARCH_API_KEY")
-        
+
         # Load global settings from environment if present
         self.default_model = os.getenv("DEFAULT_MODEL", self.default_model)
         self.default_provider = os.getenv("DEFAULT_PROVIDER", self.default_provider)
         self.timeout_seconds = int(os.getenv("TIMEOUT_SECONDS", str(self.timeout_seconds)))
         self.max_retries = int(os.getenv("MAX_RETRIES", str(self.max_retries)))
-        
+
         # Validate required configuration based on provider
         provider_configs = {
             "anthropic": self.anthropic,
             "openai": self.openai,
             "groq": self.groq,
-            "gro_proxy": self.groq_proxy,
+            "groq_proxy": self.groq_proxy,
             "perplexity": self.perplexity,
             "gemini": self.gemini,
             "brave_search": self.brave_search
         }
-        
+
         if not provider_configs[self.default_provider].api_key:
             raise ValueError(f"{self.default_provider.capitalize()} API key not found in environment or configuration")
-            
+
     def copy(self):
         """Create a deep copy of the configuration"""
         return WrapperConfig(
@@ -144,7 +145,7 @@ class WrapperConfig:
     def get_provider_config(self, model: Optional[str] = None) -> tuple[str, ProviderConfig]:
         """Get provider and configuration based on model"""
         model = model or self.default_model
-        
+
         # First check explicit provider prefixes
         provider_prefixes = {
             "openai/": ("openai", self.openai),
@@ -155,11 +156,11 @@ class WrapperConfig:
             "gemini/": ("gemini", self.gemini),
             "brave_search/": ("brave_search", self.brave_search)
         }
-        
+
         for prefix, (provider, config) in provider_prefixes.items():
             if model.startswith(prefix):
                 return provider, config
-                
+
         # Then check model maps in priority order
         provider_configs = [
             ("openai", self.openai),
@@ -170,12 +171,13 @@ class WrapperConfig:
             ("gemini", self.gemini),
             ("brave_search", self.brave_search)
         ]
-        
+
         for provider, config in provider_configs:
             if model in config.model_map:
                 return provider, config
-                
+
         raise ValueError(f"Unsupported model: {model}")
+
 # Create a function to get default config instead of a module-level instance
 def get_default_config() -> WrapperConfig:
     return WrapperConfig()
