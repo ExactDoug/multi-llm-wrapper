@@ -15,10 +15,14 @@ class ProviderConfig:
 @dataclass
 class GroqConfig(ProviderConfig):
     """Groq-specific configuration"""
+    base_url: Optional[str] = None  # Optional base URL for proxy usage
+
     def __post_init__(self):
         self.model_map = {
             "mixtral-8x7b-32768": "groq/mixtral-8x7b-32768",
-            "llama3-8b-8192": "groq/llama3-8b-8192"
+            "llama3-8b-8192": "groq/llama3-8b-8192",
+            "llama2-70b-8192": "groq/llama2-70b-8192",
+            "deepseek-r1-distill-llama-70b": "groq/deepseek-r1-distill-llama-70b"
         }
 
 @dataclass

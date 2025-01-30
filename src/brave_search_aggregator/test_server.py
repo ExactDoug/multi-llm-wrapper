@@ -3,6 +3,7 @@ import logging
 import os
 import json
 from typing import Dict, Any
+from contextlib import asynccontextmanager
 
 import aiohttp
 import uvicorn
@@ -15,7 +16,7 @@ from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
 from brave_search_aggregator.fetcher.brave_client import BraveSearchClient
-from brave_search_aggregator.synthesizer.knowledge_aggregator import KnowledgeAggregator
+from brave_search_aggregator.synthesizer.brave_knowledge_aggregator import BraveKnowledgeAggregator
 from brave_search_aggregator.utils.test_config import TestServerConfig, TestFeatureFlags
 
 # Configure logging
@@ -26,26 +27,24 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 
-# Initialize FastAPI app
-app = FastAPI(title="Brave Search Knowledge Aggregator Test Server")
-
 # Initialize configuration
 config = TestServerConfig.from_env()
 
 # Initialize session
 session: aiohttp.ClientSession = None
 client: BraveSearchClient = None
-aggregator: KnowledgeAggregator = None
+aggregator: BraveKnowledgeAggregator = None
 
 class SearchRequest(BaseModel):
     """Search request model."""
     query: str
 
-@app.on_event("startup")
-async def startup_event():
-    """Initialize components on startup."""
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Lifespan context manager for FastAPI application."""
     global session, client, aggregator
     
+    # Startup
     logger.info("Initializing test server components...")
     
     # Create aiohttp session
@@ -55,18 +54,23 @@ async def startup_event():
     client = BraveSearchClient(session, config)
     logger.info(f"Initialized Brave Search client with API key: {'*' * 8}{config.brave_api_key[-4:]}")
     
-    # Initialize knowledge aggregator
-    aggregator = KnowledgeAggregator()
+    # Initialize knowledge aggregator with the client
+    aggregator = BraveKnowledgeAggregator(brave_client=client)
     
     logger.info("Test server initialization complete")
-
-@app.on_event("shutdown")
-async def shutdown_event():
-    """Cleanup on shutdown."""
-    global session
+    
+    yield
+    
+    # Shutdown
     if session:
         await session.close()
         logger.info("Closed aiohttp session")
+
+# Initialize FastAPI app with lifespan handler
+app = FastAPI(
+    title="Brave Search Knowledge Aggregator Test Server",
+    lifespan=lifespan
+)
 
 @app.get("/health")
 async def health_check() -> Dict[str, Any]:

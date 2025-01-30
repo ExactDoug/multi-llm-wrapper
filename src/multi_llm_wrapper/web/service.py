@@ -57,8 +57,8 @@ class LLMService:
                 "claude-3-sonnet-20240229",  # 1: Claude 3 Sonnet
                 "gpt-4",                     # 2: GPT-4
                 "gpt-3.5-turbo",            # 3: GPT-3.5 Turbo
-                "mixtral-8x7b-32768",       # 4: Groq Mixtral
-                "llama3-8b-8192",           # 5: Groq LLaMA 3
+                "groq/mixtral-8x7b-32768",       # 4: Groq Mixtral
+                "groq/llama3-8b-8192",           # 5: Groq LLaMA 3
                 "sonar-small",              # 6: Perplexity Sonar Small
                 "sonar-large",              # 7: Perplexity Sonar Large
                 "gemini-1.5-flash",         # 8: Google Gemini 1.5 Flash
@@ -207,7 +207,7 @@ class LLMService:
             # Get the stream generator
             stream = await self.wrapper.query(
                 synthesis_prompt,
-                model="llama3-8b-8192",
+                model="groq/llama3-8b-8192",
                 stream=True
             )
             
