@@ -1,0 +1,50 @@
+model_list:
+  # OpenAI Models
+  - model_name: gpt-4
+    litellm_params:
+      model: gpt-4
+      api_key: ${OPENAI_API_KEY}
+
+  - model_name: gpt-3.5-turbo
+    litellm_params:
+      model: gpt-3.5-turbo
+      api_key: ${OPENAI_API_KEY}
+
+  # Anthropic Models
+  - model_name: claude-3-opus-20240229
+    litellm_params:
+      model: claude-3-opus-20240229
+      api_key: ${ANTHROPIC_API_KEY}
+
+  - model_name: claude-3-sonnet-20240229
+    litellm_params:
+      model: claude-3-sonnet-20240229
+      api_key: ${ANTHROPIC_API_KEY}
+
+  # Groq Models
+  - model_name: mixtral-8x7b-32768
+    litellm_params:
+      model: groq/mixtral-8x7b-32768
+      api_key: ${GROQ_API_KEY}
+
+  - model_name: llama3-8b-8192
+    litellm_params:
+      model: groq/llama3-8b-8192
+      api_key: ${GROQ_API_KEY}
+
+  # Perplexity Models
+  - model_name: sonar-small
+    litellm_params:
+      model: perplexity/llama-3.1-sonar-small-128k-online
+      api_key: ${PERPLEXITY_API_KEY}
+
+  - model_name: sonar-large
+    litellm_params:
+      model: perplexity/llama-3.1-sonar-large-128k-online
+      api_key: ${PERPLEXITY_API_KEY}
+
+  # Google Models
+  - model_name: gemini-1.5-flash
+    litellm_params:
+      model: gemini/gemini-1.5-flash
+      api_key: ${GEMINI_API_KEY}
