@@ -1,45 +1,74 @@
-# Multi-LLM Wrapper
+# Multi-LLM Wrapper Project
 
-A lightweight, extensible Python wrapper for interacting with multiple Large Language Models (LLMs) through a unified interface. This project aims to simplify the integration and usage of various LLM providers while maintaining a consistent API.
+## Overview
+A lightweight abstraction layer for integrating multiple LLM providers while minimizing the need for code refactoring when changing backend providers, libraries, or proxies. This project focuses on maintaining code flexibility and provider independence through a minimal but effective abstraction layer.
 
-## Features
+## Core Components
 
-- Unified interface for multiple LLM providers
-- Async support for efficient processing
-- Standardized response format
-- Built-in error handling and logging
-- Simple configuration system
-- Provider-agnostic design
+### 1. Multi-LLM Wrapper (Core)
+A lightweight abstraction layer designed to reduce the need to refactor code when changing LLM providers or libraries. Instead of hard-coding specific provider implementations (litellm, langchain, openrouter, etc.), this wrapper provides a consistent interface while isolating provider-specific code.
+
+Key Features:
+- Provider-agnostic interface
+- Minimal dependencies
+- Async support
+- Standardized response formats
+- Simple configuration
+
+Currently Using:
+- LiteLLM for provider connectivity (abstracted for future flexibility)
+- Support for OpenAI, Anthropic, Groq, Google, and Perplexity
+- Integration with custom providers (e.g., Brave Search Knowledge Aggregator)
+
+### 2. Brave Search Knowledge Aggregator
+A sophisticated search and knowledge synthesis component designed to integrate with the Multi-LLM Wrapper as though it were another LLM provider. Features streaming response capabilities to maintain compatibility with the wrapper's interface.
+
+Status: Active development
+Current Focus: 
+- Implementing streaming responses
+- Enhancing knowledge synthesis
+- Integrating with the core wrapper
+
+### 3. LiteLLM Proxy
+A standardized LiteLLM proxy server providing OpenAI API compatibility for any LiteLLM-supported provider. 
+
+Key Uses:
+- Rapid testing of different LLM providers
+- Tool for occasional one-off LLM access
+- Backend support for tools like CLINE/Roo-Code
+- Access to providers not natively supported by other tools
+
+### 4. Groq Proxy (Deprecated)
+A simple OpenAI API-compatible proxy specifically for Groq. Being phased out in favor of the more versatile LiteLLM Proxy.
 
 ## Quick Start
 
 ### Installation
-
-1. Clone the repository:
 ```bash
+# Clone repository
 git clone https://github.com/exactdoug/multi-llm-wrapper.git
 cd multi-llm-wrapper
-```
 
-2. Create and activate a virtual environment:
-```bash
+# Create and activate virtual environment
 python -m venv venv
-source venv/bin/activate  # or venv\Scripts\activate on Windows
-```
+source venv/bin/activate  # Linux/Mac
+# or
+.\venv\Scripts\activate  # Windows
 
-3. Install dependencies:
-```bash
+# Install dependencies
 pip install -r requirements.txt
 ```
 
-4. Set up your environment variables:
+### Configuration
 ```bash
-export ANTHROPIC_API_KEY=your_key_here
-export OPENAI_API_KEY=your_key_here  # if using OpenAI models
+# Copy configuration examples
+cp .env.example .env
+cp litellm_proxy/config.yaml.example litellm_proxy/config.yaml
+
+# Configure your .env file with required API keys
 ```
 
 ### Basic Usage
-
 ```python
 import asyncio
 from multi_llm_wrapper import LLMWrapper
@@ -47,8 +76,10 @@ from multi_llm_wrapper import LLMWrapper
 async def main():
     wrapper = LLMWrapper()
     
+    # Basic query using any configured provider
     response = await wrapper.query(
-        "Explain how to make a peanut butter sandwich."
+        "What is the capital of France?",
+        model="claude-3-sonnet-20240229"  # Optional
     )
     
     print(f"Response: {response['content']}")
@@ -57,78 +88,57 @@ if __name__ == "__main__":
     asyncio.run(main())
 ```
 
-## Configuration
+## Component Setup
 
-The wrapper can be configured using the `WrapperConfig` class:
-
-```python
-from multi_llm_wrapper import WrapperConfig
-
-config = WrapperConfig(
-    default_model="claude-3-sonnet-20240229",
-    default_provider="anthropic",
-    timeout_seconds=30,
-    max_retries=2
-)
-
-wrapper = LLMWrapper(config=config)
+### LiteLLM Proxy
+```bash
+cd litellm_proxy
+python proxy.py
+# Server runs on http://localhost:8010
 ```
 
-## Running Tests
-
+### Brave Search Knowledge Aggregator
 ```bash
-pytest tests/
+# Development/Test Server
+python -m brave_search_aggregator.test_server
+# Runs on http://localhost:8001
+
+# Production Server
+python -m multi_llm_wrapper.web.run
+# Runs on http://localhost:8000
 ```
 
 ## Project Structure
-
 ```
-multi_llm_wrapper/
+multi-llm-wrapper/
 ├── src/
-│   ├── __init__.py
-│   ├── wrapper.py      # Core wrapper implementation
-│   ├── config.py       # Configuration
-│   └── utils.py        # Helper utilities
-├── tests/
-│   ├── __init__.py
-│   └── test_wrapper.py # Tests
-├── examples/
-│   └── basic_usage.py  # Usage examples
-├── README.md
-├── requirements.txt
-└── setup.py
+│   ├── multi_llm_wrapper/     # Core wrapper implementation
+│   └── brave_search_aggregator/ # Search component
+├── litellm_proxy/            # LiteLLM proxy server
+├── groq_proxy/              # Groq proxy (deprecated)
+├── docs/                    # Documentation
+└── tests/                  # Test suites
 ```
 
-## Current Status
+## Testing
+```bash
+# Run all tests
+pytest
 
-This is the initial implementation with basic functionality. Future enhancements will include:
-
-- Additional provider integrations
-- Response synthesis capabilities
-- Advanced error recovery
-- Comprehensive monitoring
-- Caching and optimization
-- Load balancing and failover
-
-## Subprojects
-
-### Brave Search Knowledge Aggregator
-A sophisticated component that enhances search capabilities by intelligently processing and synthesizing web search results. See [Brave Search Documentation](docs/brave-dev/README.md) for details.
-
-## License
-
-MIT License - see LICENSE file for details.
+# Test specific components
+pytest tests/test_wrapper/
+pytest tests/brave_search_aggregator/
+pytest litellm_proxy/tests/
+```
 
 ## Contributing
-
 1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Make your changes
-4. Run tests (`pytest`)
-5. Commit your changes (`git commit -m 'Add amazing feature'`)
-6. Push to the branch (`git push origin feature/amazing-feature`)
-7. Open a Pull Request
+2. Create a feature branch
+3. Run tests
+4. Submit pull request
+
+## License
+MIT License - see LICENSE file for details.
 
 ## Authors
-
 - Exact Technology Partners (dmortensen@exactpartners.com)

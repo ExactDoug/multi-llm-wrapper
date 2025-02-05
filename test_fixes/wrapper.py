@@ -144,25 +144,28 @@ class LLMWrapper:
                 "model": model,
                 "messages": [{"role": "user", "content": prompt}],
                 "timeout": kwargs.pop("timeout", self.config.timeout_seconds),
-                "api_key": provider_config.api_key,  # Pass API key directly for all providers
+                "api_key": provider_config.api_key,
                 "stream": stream,
                 **kwargs
             }
 
-            # Add provider-specific configuration
+            # Handle provider-specific configuration
             if provider == "groq":
                 logging.debug("Using groq provider")
-                # Model prefix should already be handled by model_map
+                # Ensure model has groq/ prefix
+                if not model.startswith("groq/"):
+                    model = f"groq/{model}"
+                request_kwargs["model"] = model
+
                 if hasattr(provider_config, 'base_url') and provider_config.base_url:
                     request_kwargs["base_url"] = provider_config.base_url
+
             elif provider == "openai" and provider_config.organization_id:
                 request_kwargs["headers"] = {
                     "OpenAI-Organization": provider_config.organization_id
                 }
             elif provider == "gemini":
-                # Gemini requires the API key to be passed as google_api_key
                 request_kwargs["google_api_key"] = provider_config.api_key
-                # Remove the default api_key parameter
                 request_kwargs.pop("api_key", None)
 
             logger.info(f"Sending query to {provider} model: {model} (streaming: {stream})")
@@ -183,6 +186,7 @@ class LLMWrapper:
                 model=model,
                 start_time=start_time
             )
+
         except ValueError as e:
             logger.error(f"Validation error: {str(e)}")
             return self._format_error_response(
