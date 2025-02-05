@@ -3,7 +3,7 @@ from litellm import acompletion
 import logging
 import time
 from dotenv import load_dotenv
-from .config import WrapperConfig, get_default_config
+from src.multi_llm_wrapper.config import WrapperConfig, get_default_config
 
 # Load environment variables at module level
 load_dotenv()
@@ -46,7 +46,7 @@ class LLMWrapper:
     def brave_search(self):
         """Lazy initialization of Brave Search client"""
         if self._brave_search is None and self.config.brave_search.api_key:
-            from .web.brave_search import BraveSearchClient
+            from src.multi_llm_wrapper.web.brave_search import BraveSearchClient
             self._brave_search = BraveSearchClient(self.config.brave_search)
         return self._brave_search
 

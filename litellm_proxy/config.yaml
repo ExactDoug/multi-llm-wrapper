@@ -32,6 +32,11 @@ model_list:
       model: groq/llama3-8b-8192
       api_key: ${GROQ_API_KEY}
 
+  - model_name: deepseek-r1-distill-llama-70b
+    litellm_params:
+      model: groq/deepseek-r1-distill-llama-70b
+      api_key: ${GROQ_API_KEY}
+
   # Perplexity Models
   - model_name: sonar-small
     litellm_params:
@@ -41,6 +46,11 @@ model_list:
   - model_name: sonar-large
     litellm_params:
       model: perplexity/llama-3.1-sonar-large-128k-online
+      api_key: ${PERPLEXITY_API_KEY}
+
+  - model_name: sonar-reasoning
+    litellm_params:
+      model: perplexity/sonar-reasoning
       api_key: ${PERPLEXITY_API_KEY}
 
   # Google Models

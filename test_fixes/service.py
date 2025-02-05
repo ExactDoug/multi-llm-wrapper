@@ -1,7 +1,7 @@
 from typing import AsyncGenerator, Dict, Any, Optional
 from datetime import datetime, timedelta
 import json
-from wrapper import LLMWrapper
+from test_fixes.wrapper import LLMWrapper
 
 class LLMService:
     def __init__(self):
