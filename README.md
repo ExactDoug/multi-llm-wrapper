@@ -97,16 +97,24 @@ python proxy.py
 # Server runs on http://localhost:8010
 ```
 
-### Brave Search Knowledge Aggregator
-```bash
-# Development/Test Server
-python -m brave_search_aggregator.test_server
-# Runs on http://localhost:8001
+## Server Components
 
-# Production Server
-python -m multi_llm_wrapper.web.run
+### Multi-LLM Web Server
+The main web interface for interacting with multiple LLM providers.
+```bash
+uvicorn multi_llm_wrapper.web.app:app --reload --host 0.0.0.0 --port 8000
 # Runs on http://localhost:8000
 ```
+
+### Brave Search Knowledge Aggregator
+Provides search and knowledge synthesis capabilities.
+```bash
+# Command needs verification
+python -m brave_search_aggregator.test_server
+# Runs on http://localhost:8001
+```
+
+Note: Both servers need to be running for full system functionality.
 
 ## Project Structure
 ```

@@ -125,3 +125,20 @@ Standard HTTP status codes:
 - [LiteLLM Documentation](https://docs.litellm.ai/)
 - Open an issue
 - Contact: dmortensen@exactpartners.com
+
+## New Feature: `service_tier` Parameter for Groq
+
+The `service_tier` parameter has been added to Groq requests to enable using the paid API. This parameter is always included in every request, defaulting to `'on_demand'`.
+
+To use the `service_tier` parameter, you can include it in your request payload:
+
+```python
+response = proxy.completion(
+    model='groq-model',
+    messages=[{'role': 'user', 'content': 'Hello, world!'}],
+    service_tier='flex'  # Use the 'flex' tier for better models and fewer rate limits
+)
+print(response)
+```
+
+This will allow you to use the paid Groq API with better models and fewer rate limits. The `service_tier` parameter is always included in every request, defaulting to `'on_demand'`.

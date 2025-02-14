@@ -26,16 +26,37 @@ model_list:
     litellm_params:
       model: groq/mixtral-8x7b-32768
       api_key: ${GROQ_API_KEY}
+      service_tier: "flex"
 
   - model_name: llama3-8b-8192
     litellm_params:
       model: groq/llama3-8b-8192
       api_key: ${GROQ_API_KEY}
+      service_tier: "flex"
 
   - model_name: deepseek-r1-distill-llama-70b
     litellm_params:
       model: groq/deepseek-r1-distill-llama-70b
       api_key: ${GROQ_API_KEY}
+      service_tier: "flex"
+
+  - model_name: deepseek-r1-distill-llama-70b-specdec
+    litellm_params:
+      model: groq/deepseek-r1-distill-llama-70b-specdec
+      api_key: ${GROQ_API_KEY}
+      service_tier: "flex"
+
+  - model_name: llama-3.1-8b-instant
+    litellm_params:
+      model: groq/llama-3.1-8b-instant
+      api_key: ${GROQ_API_KEY}
+      service_tier: "flex"
+
+  - model_name: llama-3.3-70b-versatile
+    litellm_params:
+      model: groq/llama-3.3-70b-versatile
+      api_key: ${GROQ_API_KEY}
+      service_tier: "flex"
 
   # Perplexity Models
   - model_name: sonar-small
