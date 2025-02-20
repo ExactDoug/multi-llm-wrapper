@@ -1,0 +1,117 @@
+# Brave Search Knowledge Aggregator Project Prompt Template
+
+## Project Overview
+This project involves the development and implementation of the Brave Search Knowledge Aggregator. The primary goal is to create a streaming-first architecture that integrates with the Brave Search API, focusing on performance, memory management, and error recovery.
+
+## Documentation Structure
+
+### 1. Current State Documents
+Located in @/docs/brave-dev/current-state/
+- project-state-overview.md: Current high-level status
+- project-state-technical.md: Current technical details
+- project-state-integration.md: Current integration state
+- project-state-development.md: Current development status
+
+### 2. Recent History
+Located in @/docs/brave-dev/recent-history/
+- Maintains the last 3 versions of state documents
+- Used for immediate context and comparison
+- Updated with each state change
+- Includes timestamps in filenames
+
+### 3. Archived State Documents
+Located in @/docs/brave-dev/archive/[YYYY]/[MMM]/[DD]/[timestamp]/
+Example: @/docs/brave-dev/archive/2025/Feb/20/0102/
+- Nested folder structure by date and time
+- Small, focused files for faster access
+- Complete historical record
+- Each timestamp folder contains:
+  * project-state-overview.md
+  * project-state-technical.md
+  * project-state-integration.md
+  * project-state-development.md
+
+### 4. State Document Guidelines
+1. Current State:
+   - Always update current-state/ documents
+   - Keep only latest version here
+   - All files must be complete and self-contained
+
+2. Recent History:
+   - Move previous current state here
+   - Keep max 3 recent versions
+   - Oldest version moves to archive
+
+3. Archive:
+   - Create date-based folder structure
+   - Use 24-hour timestamp format
+   - Never modify archived files
+   - Preserve all historical states
+
+4. File Management:
+   - Update current state in-place
+   - Archive old versions before updates
+   - Maintain consistent naming
+   - Include timestamps in archived files
+
+### 5. Other Documentation
+- action-plan.md: Project tasks and next steps
+- progress-updates.md: Continuous progress log
+
+## Critical Requirements
+1. **Performance Targets**:
+   - First Status: < 100ms
+   - First Result: < 1s
+   - Source Selection: < 3s
+   - Memory Usage: < 10MB per request
+   - Error Rate: < 1%
+
+2. **Resource Constraints**:
+   - API Rate Limit: 20 requests/second
+   - Connection Timeout: 30 seconds
+   - Max Results Per Query: 20
+
+## Development Focus Areas
+1. **Async Iterator Pattern**:
+   - Fix initialization pattern
+   - Implement proper cleanup
+   - Verify resource management
+   - Test error propagation
+
+2. **Memory Management**:
+   - Finalize buffer controls
+   - Implement cleanup triggers
+   - Verify leak prevention
+   - Test resource tracking
+
+3. **Error Recovery**:
+   - Complete partial results handling
+   - Implement state recovery
+   - Test error propagation
+   - Verify cleanup on failure
+
+4. **Performance Validation**:
+   - Response timing
+   - Memory usage
+   - Throughput testing
+   - Resource monitoring
+
+## Testing Infrastructure
+- **Test Server**: Running on port 8001 with feature flags enabled for streaming, memory tracking, and error injection.
+- **Performance Testing Framework**: Includes load testing and error injection capabilities.
+- **Test Scenarios**: Covers streaming behavior, memory management, and error handling.
+
+## Progress Tracking
+- **Action Plan**: Updated as tasks are completed.
+- **Progress Log**: Maintained in the action plan document.
+- **Commit Messages**: Reference the action plan and relevant documentation.
+
+## Standard Prompt for New Chats
+When starting a new chat for this project, please reference this prompt template and the associated documentation to ensure all relevant context is considered. This ensures consistency and maintains focus on the project goals and requirements.
+
+## Example Use Case
+When beginning a new task or discussion, start with:
+"Referring to the action plan and associated documentation, I will focus on [specific task] to ensure [specific goal] is achieved, adhering to the performance and resource constraints outlined in the project requirements."
+
+## Project-Specific Instructions
+Don't use the server-memory MCP tool for this project.

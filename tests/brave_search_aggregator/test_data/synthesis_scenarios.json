@@ -1,0 +1,220 @@
+{
+    "quality_tests": [
+        {
+            "text": "Comprehensive analysis of quantum computing applications in modern cryptography, including detailed examination of Shor's algorithm and its implications for current encryption methods",
+            "sources": [
+                "research_paper",
+                "academic_journal",
+                "expert_review"
+            ],
+            "depth": "comprehensive",
+            "citations": 15,
+            "technical_accuracy": 0.95,
+            "expected_quality": 0.85,
+            "expected_confidence": 0.8
+        },
+        {
+            "text": "Overview of basic quantum computing concepts and their potential impact on future technology developments",
+            "sources": [
+                "educational_site",
+                "expert_review"
+            ],
+            "depth": "intermediate",
+            "citations": 8,
+            "technical_accuracy": 0.8,
+            "expected_quality": 0.75,
+            "expected_confidence": 0.7
+        },
+        {
+            "text": "Brief introduction to quantum computers and their basic principles",
+            "sources": [
+                "blog",
+                "educational_site"
+            ],
+            "depth": "shallow",
+            "citations": 3,
+            "technical_accuracy": 0.7,
+            "expected_quality": 0.6,
+            "expected_confidence": 0.6
+        }
+    ],
+    "streaming_scenarios": [
+        {
+            "name": "high_volume_streaming",
+            "items": [
+                {
+                    "text": "Detailed analysis of quantum entanglement and its applications",
+                    "sources": [
+                        "research_paper",
+                        "academic_journal"
+                    ],
+                    "depth": "comprehensive",
+                    "citations": 12,
+                    "technical_accuracy": 0.9
+                },
+                {
+                    "text": "Quantum teleportation protocols and experimental results",
+                    "sources": [
+                        "research_paper",
+                        "expert_review"
+                    ],
+                    "depth": "comprehensive",
+                    "citations": 10,
+                    "technical_accuracy": 0.85
+                },
+                {
+                    "text": "Quantum key distribution methods in cryptography",
+                    "sources": [
+                        "academic_journal",
+                        "expert_review"
+                    ],
+                    "depth": "comprehensive",
+                    "citations": 8,
+                    "technical_accuracy": 0.9
+                }
+            ],
+            "expected_metrics": {
+                "min_quality_score": 0.8,
+                "max_processing_time_ms": 1000,
+                "max_memory_mb": 10
+            }
+        }
+    ],
+    "error_scenarios": [
+        {
+            "name": "missing_fields",
+            "items": [
+                {
+                    "text": "Incomplete content"
+                },
+                {
+                    "sources": [
+                        "blog"
+                    ]
+                },
+                {
+                    "depth": "shallow"
+                }
+            ],
+            "expected_behavior": "skip_invalid"
+        },
+        {
+            "name": "invalid_values",
+            "items": [
+                {
+                    "text": "Test content",
+                    "sources": [
+                        "invalid_source"
+                    ],
+                    "depth": "invalid_depth",
+                    "citations": "invalid",
+                    "technical_accuracy": "invalid"
+                }
+            ],
+            "expected_behavior": "use_defaults"
+        }
+    ],
+    "performance_scenarios": [
+        {
+            "name": "rapid_streaming",
+            "batch_size": 10,
+            "content_template": {
+                "text": "Performance test content {index}",
+                "sources": [
+                    "research_paper",
+                    "academic_journal"
+                ],
+                "depth": "comprehensive",
+                "citations": 10,
+                "technical_accuracy": 0.9
+            },
+            "requirements": {
+                "max_time_per_item_ms": 100,
+                "max_total_time_ms": 3000,
+                "max_memory_mb": 10
+            }
+        }
+    ],
+    "validation_requirements": {
+        "quality_thresholds": {
+            "min_quality_score": 0.8,
+            "min_confidence_score": 0.7,
+            "required_depth": "comprehensive"
+        },
+        "performance_limits": {
+            "max_processing_time_ms": 3000,
+            "max_memory_mb": 10,
+            "max_error_rate": 0.01
+        }
+    },
+    "resource_constraint_scenarios": [
+        {
+            "name": "rate_limit_test",
+            "items": [
+                {
+                    "text": "Rate limit test content",
+                    "sources": [
+                        "research_paper"
+                    ],
+                    "depth": "comprehensive",
+                    "citations": 10,
+                    "technical_accuracy": 0.9
+                }
+            ],
+            "request_pattern": {
+                "burst_size": 5,
+                "total_requests": 25,
+                "interval_ms": 100
+            },
+            "expected_behavior": {
+                "max_requests_per_second": 20,
+                "recovery_time_ms": 100,
+                "error_handling": "throttle"
+            }
+        },
+        {
+            "name": "timeout_test",
+            "items": [
+                {
+                    "text": "Timeout test content",
+                    "sources": [
+                        "academic_journal"
+                    ],
+                    "depth": "comprehensive",
+                    "citations": 8,
+                    "technical_accuracy": 0.85,
+                    "delay_ms": 35000
+                }
+            ],
+            "expected_behavior": {
+                "connection_timeout_sec": 30,
+                "operation_timeout_sec": 25,
+                "cleanup_timeout_sec": 5,
+                "error_handling": "terminate"
+            }
+        },
+        {
+            "name": "results_limit_test",
+            "items": [
+                {
+                    "text": "Results limit test content {index}",
+                    "sources": [
+                        "expert_review"
+                    ],
+                    "depth": "comprehensive",
+                    "citations": 5,
+                    "technical_accuracy": 0.8
+                }
+            ],
+            "batch_config": {
+                "total_items": 25,
+                "batch_size": 5
+            },
+            "expected_behavior": {
+                "max_results": 20,
+                "overflow_behavior": "truncate",
+                "error_handling": "skip"
+            }
+        }
+    ]
+}

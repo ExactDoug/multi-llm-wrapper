@@ -1,0 +1,216 @@
+{
+    "response_timing": {
+        "first_status": {
+            "description": "Test first status response time",
+            "test_cases": [
+                {
+                    "name": "simple_query",
+                    "query": "python",
+                    "max_response_time_ms": 100,
+                    "memory_limit_mb": 10
+                },
+                {
+                    "name": "complex_query",
+                    "query": "machine learning frameworks comparison",
+                    "max_response_time_ms": 100,
+                    "memory_limit_mb": 10
+                }
+            ]
+        },
+        "streaming_latency": {
+            "description": "Test streaming result delivery times",
+            "test_cases": [
+                {
+                    "name": "continuous_stream",
+                    "query": "web development best practices",
+                    "expected_metrics": {
+                        "max_time_between_results_ms": 50,
+                        "max_batch_processing_time_ms": 100,
+                        "max_total_time_ms": 3000
+                    }
+                },
+                {
+                    "name": "large_result_set",
+                    "query": "artificial intelligence applications",
+                    "expected_metrics": {
+                        "max_time_between_results_ms": 75,
+                        "max_batch_processing_time_ms": 150,
+                        "max_total_time_ms": 5000
+                    }
+                }
+            ]
+        }
+    },
+    "memory_usage": {
+        "baseline": {
+            "description": "Test baseline memory usage",
+            "test_cases": [
+                {
+                    "name": "idle_state",
+                    "duration_seconds": 60,
+                    "max_memory_mb": 5,
+                    "check_interval_ms": 1000
+                },
+                {
+                    "name": "active_state",
+                    "query": "software engineering",
+                    "duration_seconds": 60,
+                    "max_memory_mb": 10,
+                    "check_interval_ms": 1000
+                }
+            ]
+        },
+        "load_testing": {
+            "description": "Test memory usage under load",
+            "test_cases": [
+                {
+                    "name": "concurrent_queries",
+                    "queries": [
+                        "docker containers",
+                        "kubernetes clusters",
+                        "cloud computing"
+                    ],
+                    "concurrent_requests": 5,
+                    "max_memory_mb": 10,
+                    "duration_seconds": 30
+                },
+                {
+                    "name": "sustained_load",
+                    "query_template": "technology topic {index}",
+                    "request_count": 100,
+                    "rate_per_second": 2,
+                    "max_memory_mb": 10
+                }
+            ]
+        }
+    },
+    "throughput": {
+        "single_thread": {
+            "description": "Test single-threaded throughput",
+            "test_cases": [
+                {
+                    "name": "sequential_queries",
+                    "query_count": 50,
+                    "min_queries_per_second": 1,
+                    "max_memory_mb": 10
+                },
+                {
+                    "name": "batch_processing",
+                    "batch_size": 5,
+                    "batch_count": 10,
+                    "min_batches_per_second": 0.5,
+                    "max_memory_mb": 10
+                }
+            ]
+        },
+        "multi_thread": {
+            "description": "Test multi-threaded throughput",
+            "test_cases": [
+                {
+                    "name": "parallel_queries",
+                    "thread_count": 5,
+                    "queries_per_thread": 10,
+                    "min_total_queries_per_second": 3,
+                    "max_memory_mb": 10
+                },
+                {
+                    "name": "mixed_workload",
+                    "thread_count": 3,
+                    "workload_mix": {
+                        "simple_queries": 0.6,
+                        "complex_queries": 0.3,
+                        "error_cases": 0.1
+                    },
+                    "total_queries": 50,
+                    "min_throughput_qps": 2
+                }
+            ]
+        }
+    },
+    "resource_monitoring": {
+        "cpu_usage": {
+            "description": "Test CPU utilization",
+            "test_cases": [
+                {
+                    "name": "analysis_phase",
+                    "query": "distributed systems architecture",
+                    "max_cpu_percent": 70,
+                    "duration_seconds": 30
+                },
+                {
+                    "name": "synthesis_phase",
+                    "query": "microservices design patterns",
+                    "max_cpu_percent": 80,
+                    "duration_seconds": 30
+                }
+            ]
+        },
+        "network_usage": {
+            "description": "Test network resource usage",
+            "test_cases": [
+                {
+                    "name": "result_streaming",
+                    "query": "cloud native applications",
+                    "max_bandwidth_mbps": 1,
+                    "duration_seconds": 30
+                },
+                {
+                    "name": "batch_requests",
+                    "query_count": 20,
+                    "max_bandwidth_mbps": 2,
+                    "duration_seconds": 60
+                }
+            ]
+        }
+    },
+    "streaming_metrics": {
+        "result_delivery": {
+            "description": "Test result delivery performance",
+            "test_cases": [
+                {
+                    "name": "continuous_stream",
+                    "query": "programming languages comparison",
+                    "expected_metrics": {
+                        "min_results_per_second": 2,
+                        "max_gap_between_results_ms": 500,
+                        "max_memory_mb": 10
+                    }
+                },
+                {
+                    "name": "batched_stream",
+                    "query": "database management systems",
+                    "batch_config": {
+                        "size": 5,
+                        "max_processing_time_ms": 200,
+                        "max_memory_mb": 10
+                    }
+                }
+            ]
+        },
+        "backpressure": {
+            "description": "Test backpressure handling",
+            "test_cases": [
+                {
+                    "name": "slow_consumer",
+                    "query": "software testing methodologies",
+                    "consumer_delay_ms": 1000,
+                    "max_buffer_size": 20,
+                    "expected_behavior": {
+                        "should_throttle": true,
+                        "max_memory_mb": 10
+                    }
+                },
+                {
+                    "name": "fast_producer",
+                    "query": "agile development practices",
+                    "producer_rate_per_second": 10,
+                    "max_buffer_size": 30,
+                    "expected_behavior": {
+                        "should_throttle": true,
+                        "max_memory_mb": 10
+                    }
+                }
+            ]
+        }
+    }
+}

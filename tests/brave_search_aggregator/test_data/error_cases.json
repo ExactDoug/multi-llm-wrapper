@@ -1,0 +1,201 @@
+{
+    "input_validation": [
+        {
+            "name": "empty_query",
+            "query": "",
+            "expected_error": {
+                "type": "ValueError",
+                "message": "Empty query",
+                "stage": "query_analysis"
+            }
+        },
+        {
+            "name": "too_long_query",
+            "query": "python programming python programming python programming python programming python programming python programming python programming python programming python programming python programming python programming python programming python programming python programming python programming python programming python programming python programming python programming python programming",
+            "expected_error": {
+                "type": "ValueError",
+                "message": "Query too long",
+                "stage": "query_analysis"
+            }
+        },
+        {
+            "name": "invalid_characters",
+            "query": "select * from users;--",
+            "expected_error": {
+                "type": "ValueError",
+                "message": "Invalid characters in query",
+                "stage": "preprocessing"
+            }
+        }
+    ],
+    "api_errors": [
+        {
+            "name": "authentication_failure",
+            "query": "machine learning",
+            "inject_error": {
+                "type": "APIError",
+                "status": 401,
+                "message": "Invalid API key",
+                "expected_handling": {
+                    "should_retry": false,
+                    "error_type": "error",
+                    "should_include_details": true
+                }
+            }
+        },
+        {
+            "name": "service_unavailable",
+            "query": "web development",
+            "inject_error": {
+                "type": "APIError",
+                "status": 503,
+                "message": "Service temporarily unavailable",
+                "expected_handling": {
+                    "should_retry": true,
+                    "max_retries": 3,
+                    "retry_delay_ms": 1000
+                }
+            }
+        }
+    ],
+    "memory_errors": [
+        {
+            "name": "excessive_memory_usage",
+            "query": "comprehensive programming tutorial",
+            "setup": {
+                "max_memory_mb": 10,
+                "force_memory_pressure": true
+            },
+            "expected_error": {
+                "type": "MemoryError",
+                "stage": "processing",
+                "should_cleanup": true
+            }
+        },
+        {
+            "name": "resource_leak",
+            "query": "software architecture",
+            "setup": {
+                "create_resource_leak": true,
+                "leak_size_mb": 5
+            },
+            "expected_error": {
+                "type": "MemoryError",
+                "stage": "cleanup",
+                "should_force_gc": true
+            }
+        }
+    ],
+    "timeout_scenarios": [
+        {
+            "name": "search_timeout",
+            "query": "cloud computing",
+            "setup": {
+                "timeout_seconds": 30,
+                "force_delay_seconds": 35
+            },
+            "expected_error": {
+                "type": "TimeoutError",
+                "stage": "search",
+                "should_return_partial": true,
+                "min_partial_results": 0
+            }
+        },
+        {
+            "name": "analysis_timeout",
+            "query": "distributed systems",
+            "setup": {
+                "timeout_seconds": 10,
+                "force_analysis_delay_seconds": 15
+            },
+            "expected_error": {
+                "type": "TimeoutError",
+                "stage": "analysis",
+                "should_return_partial": true,
+                "min_partial_results": 0
+            }
+        }
+    ],
+    "rate_limiting": [
+        {
+            "name": "exceeded_rate_limit",
+            "query": "artificial intelligence",
+            "setup": {
+                "rate_limit": 20,
+                "current_requests": 21
+            },
+            "expected_error": {
+                "type": "RateLimitError",
+                "should_retry": true,
+                "retry_after_seconds": 60
+            }
+        },
+        {
+            "name": "concurrent_requests",
+            "query": "blockchain",
+            "setup": {
+                "concurrent_requests": 25,
+                "rate_limit": 20
+            },
+            "expected_error": {
+                "type": "RateLimitError",
+                "should_queue": true,
+                "max_queue_size": 10
+            }
+        }
+    ],
+    "resource_cleanup": [
+        {
+            "name": "failed_cleanup",
+            "query": "kubernetes",
+            "setup": {
+                "force_cleanup_failure": true
+            },
+            "expected_error": {
+                "type": "ResourceError",
+                "stage": "cleanup",
+                "should_log_warning": true
+            }
+        },
+        {
+            "name": "partial_cleanup",
+            "query": "microservices",
+            "setup": {
+                "force_partial_cleanup": true,
+                "cleanup_success_rate": 0.5
+            },
+            "expected_error": {
+                "type": "ResourceWarning",
+                "should_retry_cleanup": true
+            }
+        }
+    ],
+    "recovery_scenarios": [
+        {
+            "name": "partial_results_recovery",
+            "query": "data science",
+            "setup": {
+                "fail_after_results": 5,
+                "error_type": "ConnectionError"
+            },
+            "expected_handling": {
+                "should_return_partial": true,
+                "min_results": 5,
+                "should_include_error": true
+            }
+        },
+        {
+            "name": "graceful_degradation",
+            "query": "machine learning frameworks",
+            "setup": {
+                "degrade_service": true,
+                "degradation_factor": 0.5
+            },
+            "expected_handling": {
+                "should_continue": true,
+                "max_response_time_ms": 5000,
+                "min_quality_score": 0.5
+            }
+        }
+    ]
+}

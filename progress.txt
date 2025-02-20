@@ -1,0 +1,1 @@
+Updated the QueryAnalyzer class to increase the maximum query length to 2000 characters.

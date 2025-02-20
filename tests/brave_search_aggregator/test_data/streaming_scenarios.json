@@ -1,0 +1,217 @@
+{
+    "progressive_delivery": [
+        {
+            "name": "basic_streaming",
+            "query": "python web frameworks",
+            "expected_events": [
+                {
+                    "type": "status",
+                    "stage": "analysis_complete"
+                },
+                {
+                    "type": "status",
+                    "stage": "search_started"
+                },
+                {
+                    "type": "search_result",
+                    "min_count": 5
+                },
+                {
+                    "type": "interim_analysis",
+                    "min_count": 1
+                },
+                {
+                    "type": "status",
+                    "stage": "source_selection"
+                },
+                {
+                    "type": "final_synthesis"
+                }
+            ],
+            "max_time_between_events_ms": 100
+        },
+        {
+            "name": "large_result_set",
+            "query": "machine learning tutorials",
+            "expected_events": [
+                {
+                    "type": "status",
+                    "stage": "analysis_complete"
+                },
+                {
+                    "type": "status",
+                    "stage": "search_started"
+                },
+                {
+                    "type": "search_result",
+                    "min_count": 10
+                },
+                {
+                    "type": "interim_analysis",
+                    "min_count": 3
+                },
+                {
+                    "type": "status",
+                    "stage": "source_selection"
+                },
+                {
+                    "type": "final_synthesis"
+                }
+            ],
+            "max_time_between_events_ms": 150
+        }
+    ],
+    "batch_processing": [
+        {
+            "name": "small_batch",
+            "query": "javascript basics",
+            "batch_size": 3,
+            "expected_batches": [
+                {
+                    "size": 3,
+                    "should_trigger_analysis": true,
+                    "max_processing_time_ms": 100
+                },
+                {
+                    "size": 3,
+                    "should_trigger_analysis": true,
+                    "max_processing_time_ms": 100
+                }
+            ]
+        },
+        {
+            "name": "large_batch",
+            "query": "data science projects",
+            "batch_size": 5,
+            "expected_batches": [
+                {
+                    "size": 5,
+                    "should_trigger_analysis": true,
+                    "max_processing_time_ms": 150
+                },
+                {
+                    "size": 5,
+                    "should_trigger_analysis": true,
+                    "max_processing_time_ms": 150
+                }
+            ]
+        }
+    ],
+    "interim_analysis": [
+        {
+            "name": "pattern_detection",
+            "query": "cloud computing services",
+            "analysis_points": [
+                {
+                    "result_count": 3,
+                    "expected_patterns": [
+                        "Multiple results from same domain"
+                    ],
+                    "max_analysis_time_ms": 100
+                },
+                {
+                    "result_count": 6,
+                    "expected_patterns": [
+                        "Mixed content types"
+                    ],
+                    "max_analysis_time_ms": 100
+                }
+            ]
+        },
+        {
+            "name": "relevance_scoring",
+            "query": "artificial intelligence ethics",
+            "analysis_points": [
+                {
+                    "result_count": 3,
+                    "min_relevance_score": 0.5,
+                    "max_analysis_time_ms": 100
+                },
+                {
+                    "result_count": 6,
+                    "min_relevance_score": 0.7,
+                    "max_analysis_time_ms": 100
+                }
+            ]
+        }
+    ],
+    "source_selection": [
+        {
+            "name": "diverse_sources",
+            "query": "blockchain technology",
+            "min_sources": 5,
+            "selection_criteria": {
+                "min_relevance": 0.7,
+                "max_duplicates": 2,
+                "required_content_types": [
+                    "webpage",
+                    "document"
+                ]
+            }
+        },
+        {
+            "name": "technical_sources",
+            "query": "kubernetes architecture",
+            "min_sources": 5,
+            "selection_criteria": {
+                "min_relevance": 0.8,
+                "max_duplicates": 1,
+                "required_content_types": [
+                    "document",
+                    "technical"
+                ]
+            }
+        }
+    ],
+    "error_recovery": [
+        {
+            "name": "partial_failure",
+            "query": "distributed systems design",
+            "inject_error": {
+                "after_results": 5,
+                "error_type": "timeout",
+                "expected_recovery": {
+                    "should_continue": true,
+                    "min_partial_results": 5
+                }
+            }
+        },
+        {
+            "name": "rate_limit",
+            "query": "microservices patterns",
+            "inject_error": {
+                "after_results": 3,
+                "error_type": "rate_limit",
+                "expected_recovery": {
+                    "should_retry": true,
+                    "max_retry_delay_ms": 1000
+                }
+            }
+        }
+    ],
+    "memory_management": [
+        {
+            "name": "large_stream",
+            "query": "comprehensive programming guide",
+            "memory_limits": {
+                "max_batch_memory_mb": 5,
+                "max_total_memory_mb": 10,
+                "check_points": [
+                    10,
+                    20,
+                    30
+                ]
+            }
+        },
+        {
+            "name": "cleanup_verification",
+            "query": "software architecture patterns",
+            "memory_checks": {
+                "after_batch": true,
+                "after_analysis": true,
+                "after_completion": true,
+                "max_retained_mb": 1
+            }
+        }
+    ]
+}

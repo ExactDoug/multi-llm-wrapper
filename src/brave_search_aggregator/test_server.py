@@ -18,6 +18,7 @@ from pydantic import BaseModel
 from brave_search_aggregator.fetcher.brave_client import BraveSearchClient
 from brave_search_aggregator.synthesizer.brave_knowledge_aggregator import BraveKnowledgeAggregator
 from brave_search_aggregator.utils.test_config import TestServerConfig, TestFeatureFlags
+from brave_search_aggregator.utils.config import Config, AnalyzerConfig
 
 # Configure logging
 logging.basicConfig(
@@ -28,7 +29,25 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Initialize configuration
-config = TestServerConfig.from_env()
+test_server_config = TestServerConfig.from_env()
+
+# Initialize aggregator config
+aggregator_config = Config(
+    brave_api_key=test_server_config.brave_api_key,
+    max_results_per_query=test_server_config.max_results_per_query,
+    timeout_seconds=test_server_config.timeout_seconds,
+    rate_limit=test_server_config.rate_limit,
+    analyzer=AnalyzerConfig(
+        max_memory_mb=10,
+        input_type_confidence_threshold=0.8,
+        complexity_threshold=0.7,
+        ambiguity_threshold=0.6,
+        enable_segmentation=True,
+        max_segments=5,
+        enable_streaming_analysis=True,
+        analysis_batch_size=3
+    )
+)
 
 # Initialize session
 session: aiohttp.ClientSession = None
@@ -51,11 +70,14 @@ async def lifespan(app: FastAPI):
     session = aiohttp.ClientSession()
     
     # Initialize Brave Search client
-    client = BraveSearchClient(session, config)
-    logger.info(f"Initialized Brave Search client with API key: {'*' * 8}{config.brave_api_key[-4:]}")
+    client = BraveSearchClient(session, test_server_config)
+    logger.info(f"Initialized Brave Search client with API key: {'*' * 8}{test_server_config.brave_api_key[-4:]}")
     
-    # Initialize knowledge aggregator with the client
-    aggregator = BraveKnowledgeAggregator(brave_client=client)
+    # Initialize knowledge aggregator with the client and config
+    aggregator = BraveKnowledgeAggregator(
+        brave_client=client,
+        config=aggregator_config
+    )
     
     logger.info("Test server initialization complete")
     
@@ -78,18 +100,33 @@ async def health_check() -> Dict[str, Any]:
     return {
         "status": "healthy",
         "environment": "test",
-        "port": config.port,
-        "feature_flags": config.features.get_enabled_features()
+        "port": test_server_config.port,
+        "feature_flags": test_server_config.features.get_enabled_features(),
+        "analyzer_config": {
+            "max_memory_mb": aggregator_config.analyzer.max_memory_mb,
+            "batch_size": aggregator_config.analyzer.analysis_batch_size,
+            "streaming_enabled": aggregator_config.analyzer.enable_streaming_analysis
+        }
     }
 
 @app.get("/config")
 async def get_config() -> Dict[str, Any]:
     """Get current configuration."""
     return {
-        "max_results_per_query": config.max_results_per_query,
-        "timeout_seconds": config.timeout_seconds,
-        "rate_limit": config.rate_limit,
-        "feature_flags": config.features.get_enabled_features()
+        "max_results_per_query": test_server_config.max_results_per_query,
+        "timeout_seconds": test_server_config.timeout_seconds,
+        "rate_limit": test_server_config.rate_limit,
+        "feature_flags": test_server_config.features.get_enabled_features(),
+        "analyzer": {
+            "max_memory_mb": aggregator_config.analyzer.max_memory_mb,
+            "input_type_confidence_threshold": aggregator_config.analyzer.input_type_confidence_threshold,
+            "complexity_threshold": aggregator_config.analyzer.complexity_threshold,
+            "ambiguity_threshold": aggregator_config.analyzer.ambiguity_threshold,
+            "enable_segmentation": aggregator_config.analyzer.enable_segmentation,
+            "max_segments": aggregator_config.analyzer.max_segments,
+            "enable_streaming_analysis": aggregator_config.analyzer.enable_streaming_analysis,
+            "analysis_batch_size": aggregator_config.analyzer.analysis_batch_size
+        }
     }
 
 @app.post("/search")
@@ -107,45 +144,9 @@ async def search(request: SearchRequest):
         try:
             logger.info(f"Processing search request - Query: {request.query}")
             
-            # Get search iterator
-            search_iterator = client.search(request.query)
-            collected_results = []
-            
-            # Stream results as they come in
-            async for result in search_iterator:
-                collected_results.append(result)
-                
-                # Stream each result immediately
-                stream_response = {
-                    "type": "result",
-                    "query": request.query,
-                    "result": result,
-                    "total_so_far": len(collected_results)
-                }
-                yield f"data: {json.dumps(stream_response)}\n\n"
-            
-            # Process collected results
-            processed_results = await aggregator.process_parallel(
-                query=request.query,
-                sources=["brave_search"],
-                preserve_nuances=True,
-                raw_results=collected_results
-            )
-            
-            # Stream final synthesized knowledge
-            final_response = {
-                "type": "synthesis",
-                "query": request.query,
-                "processed_results": {
-                    "content": processed_results.content,
-                    "all_sources_processed": processed_results.all_sources_processed,
-                    "conflicts_resolved": processed_results.conflicts_resolved,
-                    "nuances_preserved": processed_results.nuances_preserved,
-                    "source_metrics": processed_results.source_metrics,
-                    "processing_time": processed_results.processing_time
-                }
-            }
-            yield f"data: {json.dumps(final_response)}\n\n"
+            # Stream results through the aggregator
+            async for result in aggregator.process_query(request.query):
+                yield f"data: {json.dumps(result)}\n\n"
             
         except Exception as e:
             logger.error(f"Error processing search request: {str(e)}", exc_info=True)
@@ -168,11 +169,11 @@ def main():
     """Run the test server."""
     uvicorn.run(
         "brave_search_aggregator.test_server:app",
-        host=config.host,
-        port=config.port,
-        reload=config.reload,
-        log_level=config.log_level,
-        workers=config.workers
+        host=test_server_config.host,
+        port=test_server_config.port,
+        reload=test_server_config.reload,
+        log_level=test_server_config.log_level,
+        workers=test_server_config.workers
     )
 
 if __name__ == "__main__":

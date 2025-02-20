@@ -1,0 +1,93 @@
+{
+    "simple_queries": [
+        {
+            "query": "python programming",
+            "expected_type": "TECHNICAL",
+            "expected_complexity": "simple"
+        },
+        {
+            "query": "weather in London",
+            "expected_type": "FACTUAL",
+            "expected_complexity": "simple"
+        }
+    ],
+    "complex_queries": [
+        {
+            "query": "compare python vs javascript for web development considering performance and ecosystem",
+            "expected_type": "TECHNICAL",
+            "expected_complexity": "complex",
+            "expected_segments": [
+                "python vs javascript",
+                "web development",
+                "performance",
+                "ecosystem"
+            ]
+        },
+        {
+            "query": "relationship between quantum computing and cryptography with focus on post-quantum algorithms",
+            "expected_type": "TECHNICAL",
+            "expected_complexity": "very complex",
+            "expected_segments": [
+                "quantum computing",
+                "cryptography",
+                "post-quantum algorithms"
+            ]
+        }
+    ],
+    "ambiguous_queries": [
+        {
+            "query": "python basics",
+            "expected_type": "AMBIGUOUS",
+            "possible_interpretations": [
+                "programming language",
+                "snake species"
+            ],
+            "expected_complexity": "moderate"
+        },
+        {
+            "query": "java development tools",
+            "expected_type": "AMBIGUOUS",
+            "possible_interpretations": [
+                "programming language",
+                "coffee brewing"
+            ],
+            "expected_complexity": "moderate"
+        }
+    ],
+    "technical_queries": [
+        {
+            "query": "TypeError: Cannot read property of undefined javascript",
+            "expected_type": "ERROR_LOG",
+            "expected_complexity": "moderate",
+            "expected_context": "debugging"
+        },
+        {
+            "query": "async await best practices nodejs",
+            "expected_type": "TECHNICAL",
+            "expected_complexity": "complex",
+            "expected_context": "development"
+        }
+    ],
+    "mixed_content_queries": [
+        {
+            "query": "machine learning python libraries with code examples and research papers",
+            "expected_type": "MIXED",
+            "expected_complexity": "complex",
+            "expected_content_types": [
+                "code",
+                "documentation",
+                "academic"
+            ]
+        },
+        {
+            "query": "web security vulnerabilities with examples and mitigation strategies",
+            "expected_type": "MIXED",
+            "expected_complexity": "complex",
+            "expected_content_types": [
+                "technical",
+                "examples",
+                "guidelines"
+            ]
+        }
+    ]
+}

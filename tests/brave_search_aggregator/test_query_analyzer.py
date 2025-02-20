@@ -3,94 +3,179 @@ Tests for the QueryAnalyzer component.
 """
 import pytest
 from brave_search_aggregator.analyzer.query_analyzer import QueryAnalyzer
+from brave_search_aggregator.analyzer.input_detector import InputType
+from brave_search_aggregator.analyzer.complexity_analyzer import ComplexityLevel
 
-@pytest.mark.unit
-class TestQueryAnalyzer:
-    """Test suite for QueryAnalyzer."""
+@pytest.fixture
+def analyzer():
+    """Create a QueryAnalyzer instance for testing."""
+    return QueryAnalyzer()
 
-    def test_analyze_query_basic(self, query_analyzer: QueryAnalyzer):
-        """Test basic query analysis."""
-        query = "latest developments in AI"
-        analysis = query_analyzer.analyze_query(query)
-        
-        assert analysis is not None
-        assert analysis.is_suitable_for_search
-        assert analysis.search_string == query
-        assert analysis.complexity == "basic"
+@pytest.mark.asyncio
+async def test_simple_query():
+    """Test analysis of simple queries."""
+    analyzer = QueryAnalyzer()
+    
+    query = "What is Python programming?"
+    
+    result = await analyzer.analyze_query(query)
+    assert result.is_suitable_for_search
+    assert result.complexity == "simple"
+    assert result.input_type.primary_type == InputType.NATURAL_LANGUAGE
+    assert result.complexity_analysis.level == ComplexityLevel.SIMPLE
+    assert result.ambiguity_analysis.is_ambiguous  # "python" is ambiguous
+    assert len(result.sub_queries) == 1  # One question
+    assert "What is Python programming?" in result.sub_queries
 
-    def test_analyze_query_complex(self, query_analyzer: QueryAnalyzer):
-        """Test analysis of complex queries."""
-        query = "compare renewable energy adoption rates between European and Asian countries in the last 5 years"
-        analysis = query_analyzer.analyze_query(query)
-        
-        assert analysis is not None
-        assert analysis.is_suitable_for_search
-        assert analysis.complexity == "complex"
-        assert len(analysis.sub_queries) > 1
+@pytest.mark.asyncio
+async def test_complex_query():
+    """Test analysis of complex queries."""
+    analyzer = QueryAnalyzer()
+    
+    query = """
+    How does inheritance in object-oriented programming compare to composition
+    when designing class hierarchies, particularly in terms of code reusability
+    and maintaining loose coupling between components? Consider both single
+    and multiple inheritance scenarios.
+    """
+    
+    result = await analyzer.analyze_query(query)
+    assert result.is_suitable_for_search
+    assert result.complexity in ["complex", "very complex"]
+    assert result.input_type.primary_type == InputType.NATURAL_LANGUAGE
+    assert result.complexity_analysis.level in [ComplexityLevel.COMPLEX, ComplexityLevel.VERY_COMPLEX]
+    assert len(result.complexity_analysis.factors) > 2
 
-    def test_analyze_query_ambiguous(self, query_analyzer: QueryAnalyzer):
-        """Test analysis of ambiguous queries."""
-        query = "python libraries"
-        analysis = query_analyzer.analyze_query(query)
-        
-        assert analysis is not None
-        assert analysis.is_suitable_for_search
-        assert analysis.is_ambiguous
-        assert len(analysis.possible_interpretations) > 1
+@pytest.mark.asyncio
+async def test_code_query():
+    """Test analysis of code-containing queries."""
+    analyzer = QueryAnalyzer()
+    
+    query = """
+    Why doesn't this code work?
+    
+    ```python
+    def calculate_sum(a, b):
+        return a + b
+    
+    result = calculate_sum('1', 2)
+    ```
+    
+    I get a TypeError.
+    """
+    
+    result = await analyzer.analyze_query(query)
+    assert not result.is_suitable_for_search  # Code queries aren't suitable
+    assert result.input_type.primary_type == InputType.CODE
+    assert result.segmentation.has_mixed_types
+    assert any(segment.type == InputType.CODE for segment in result.input_type.detected_types)
 
-    def test_analyze_query_unsuitable(self, query_analyzer: QueryAnalyzer):
-        """Test analysis of unsuitable queries."""
-        query = "what is 2+2"
-        analysis = query_analyzer.analyze_query(query)
-        
-        assert analysis is not None
-        assert not analysis.is_suitable_for_search
-        assert analysis.reason_unsuitable == "basic arithmetic query"
+@pytest.mark.asyncio
+async def test_error_log_query():
+    """Test analysis of error log queries."""
+    analyzer = QueryAnalyzer()
+    
+    query = """
+    2025-02-19 11:23:45 ERROR: Failed to connect to database
+        at DatabaseConnection.connect():123
+        at Main.main():45
+    
+    How do I fix this error?
+    """
+    
+    result = await analyzer.analyze_query(query)
+    assert not result.is_suitable_for_search  # Error logs aren't suitable
+    assert result.input_type.primary_type == InputType.LOG
+    assert result.segmentation.has_mixed_types
+    assert len(result.sub_queries) == 1  # One question at the end
 
-    @pytest.mark.parametrize("query,expected_terms", [
-        ("AI developments", ["AI", "developments"]),
-        ("machine learning applications", ["machine learning", "applications"]),
-        ("python programming tutorial", ["python", "programming", "tutorial"])
-    ])
-    def test_extract_search_terms(self, query_analyzer: QueryAnalyzer, query: str, expected_terms: list):
-        """Test extraction of search terms from queries."""
-        terms = query_analyzer.extract_search_terms(query)
-        assert set(terms) == set(expected_terms)
+@pytest.mark.asyncio
+async def test_ambiguous_query():
+    """Test analysis of ambiguous queries."""
+    analyzer = QueryAnalyzer()
+    
+    query = "What's the difference between Python and Java?"
+    
+    result = await analyzer.analyze_query(query)
+    assert result.is_suitable_for_search
+    assert result.is_ambiguous
+    assert len(result.possible_interpretations) >= 4  # Both terms are ambiguous
+    assert result.ambiguity_analysis.ambiguity_score > 0.5
 
-    def test_craft_search_string_basic(self, query_analyzer: QueryAnalyzer):
-        """Test creation of search strings for basic queries."""
-        query = "AI developments"
-        analysis = query_analyzer.analyze_query(query)
-        search_string = query_analyzer.craft_search_string(analysis)
-        
-        assert isinstance(search_string, str)
-        assert len(search_string) > 0
-        assert "AI" in search_string
-        assert "developments" in search_string
+@pytest.mark.asyncio
+async def test_arithmetic_query():
+    """Test analysis of arithmetic queries."""
+    analyzer = QueryAnalyzer()
+    
+    query = "What is 2 + 2?"
+    
+    result = await analyzer.analyze_query(query)
+    assert not result.is_suitable_for_search
+    assert result.complexity == "basic"
+    assert result.reason_unsuitable == "basic arithmetic query"
 
-    def test_craft_search_string_complex(self, query_analyzer: QueryAnalyzer):
-        """Test creation of search strings for complex queries."""
-        query = "compare renewable energy adoption rates between European and Asian countries"
-        analysis = query_analyzer.analyze_query(query)
-        search_string = query_analyzer.craft_search_string(analysis)
-        
-        assert isinstance(search_string, str)
-        assert len(search_string) > 0
-        assert "renewable energy" in search_string
-        assert "adoption rates" in search_string
-
-    @pytest.mark.parametrize("query", [
-        "",
-        "   ",
-        "\n\t"
-    ])
-    def test_analyze_query_empty(self, query_analyzer: QueryAnalyzer, query: str):
-        """Test handling of empty or whitespace-only queries."""
+@pytest.mark.asyncio
+async def test_empty_query():
+    """Test analysis of empty queries."""
+    analyzer = QueryAnalyzer()
+    
+    for query in ["", "   ", "\n\n"]:
         with pytest.raises(ValueError, match="Empty query"):
-            query_analyzer.analyze_query(query)
+            await analyzer.analyze_query(query)
 
-    def test_analyze_query_too_long(self, query_analyzer: QueryAnalyzer):
-        """Test handling of extremely long queries."""
-        query = "test " * 1000
-        with pytest.raises(ValueError, match="Query too long"):
-            query_analyzer.analyze_query(query)
+@pytest.mark.asyncio
+async def test_long_query():
+    """Test analysis of queries that exceed length limit."""
+    analyzer = QueryAnalyzer()
+    
+    query = "x" * (analyzer.MAX_QUERY_LENGTH + 1)
+    
+    with pytest.raises(ValueError, match="Query too long"):
+        await analyzer.analyze_query(query)
+
+@pytest.mark.asyncio
+async def test_mixed_content_query():
+    """Test analysis of queries with mixed content types."""
+    analyzer = QueryAnalyzer()
+    
+    query = """
+    I have a question about error handling in Python.
+    
+    Here's my code:
+    ```python
+    try:
+        result = process_data()
+    except Exception as e:
+        print(f"Error: {e}")
+    ```
+    
+    And here's the error I get:
+    2025-02-19 11:23:45 ERROR: Invalid data format
+        at process_data():89
+    
+    What am I doing wrong?
+    """
+    
+    result = await analyzer.analyze_query(query)
+    assert not result.is_suitable_for_search  # Contains code and error log
+    assert result.segmentation.has_mixed_types
+    assert result.input_type.confidence < 0.8  # Mixed content types
+    assert len(result.segmentation.segments) >= 4  # Natural language, code, error log, question
+
+@pytest.mark.asyncio
+async def test_performance_metrics():
+    """Test that performance metrics are properly tracked."""
+    analyzer = QueryAnalyzer()
+    
+    query = "What is Python programming?"
+    
+    result = await analyzer.analyze_query(query)
+    assert 'processing_time_ms' in result.performance_metrics
+    assert 'memory_usage_mb' in result.performance_metrics
+    assert 'input_type_confidence' in result.performance_metrics
+    assert 'ambiguity_score' in result.performance_metrics
+    assert 'complexity_score' in result.performance_metrics
+    
+    # Check performance requirements
+    assert result.performance_metrics['processing_time_ms'] < 100  # < 100ms
+    assert result.performance_metrics['memory_usage_mb'] < 10  # < 10MB

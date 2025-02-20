@@ -1,0 +1,186 @@
+{
+    "enrichment_tests": [
+        {
+            "name": "comprehensive_enrichment",
+            "input": {
+                "text": "Quantum computing applications in modern cryptography",
+                "sources": [
+                    "research_paper",
+                    "academic_journal"
+                ],
+                "depth": "comprehensive",
+                "citations": 10,
+                "technical_accuracy": 0.9
+            },
+            "expected": {
+                "enrichment_score": 0.85,
+                "diversity_score": 0.8,
+                "depth_score": 0.9,
+                "quality_metrics": {
+                    "trust_score": 0.85,
+                    "reliability_score": 0.9,
+                    "authority_score": 0.85,
+                    "freshness_score": 1.0
+                }
+            }
+        },
+        {
+            "name": "intermediate_enrichment",
+            "input": {
+                "text": "Overview of quantum computing basics",
+                "sources": [
+                    "educational_site",
+                    "expert_review"
+                ],
+                "depth": "intermediate",
+                "citations": 5,
+                "technical_accuracy": 0.8
+            },
+            "expected": {
+                "enrichment_score": 0.75,
+                "diversity_score": 0.7,
+                "depth_score": 0.7,
+                "quality_metrics": {
+                    "trust_score": 0.75,
+                    "reliability_score": 0.8,
+                    "authority_score": 0.7,
+                    "freshness_score": 1.0
+                }
+            }
+        },
+        {
+            "name": "shallow_enrichment",
+            "input": {
+                "text": "Basic quantum computing concepts",
+                "sources": [
+                    "blog",
+                    "social_media"
+                ],
+                "depth": "shallow",
+                "citations": 1,
+                "technical_accuracy": 0.6
+            },
+            "expected": {
+                "enrichment_score": 0.5,
+                "diversity_score": 0.4,
+                "depth_score": 0.4,
+                "quality_metrics": {
+                    "trust_score": 0.5,
+                    "reliability_score": 0.6,
+                    "authority_score": 0.4,
+                    "freshness_score": 1.0
+                }
+            }
+        }
+    ],
+    "streaming_scenarios": [
+        {
+            "name": "high_volume_enrichment",
+            "items": [
+                {
+                    "text": "Detailed analysis of quantum entanglement",
+                    "sources": [
+                        "research_paper",
+                        "academic_journal"
+                    ],
+                    "depth": "comprehensive",
+                    "citations": 12,
+                    "technical_accuracy": 0.95
+                },
+                {
+                    "text": "Quantum teleportation protocols",
+                    "sources": [
+                        "research_paper",
+                        "expert_review"
+                    ],
+                    "depth": "comprehensive",
+                    "citations": 10,
+                    "technical_accuracy": 0.9
+                },
+                {
+                    "text": "Quantum key distribution methods",
+                    "sources": [
+                        "academic_journal",
+                        "expert_review"
+                    ],
+                    "depth": "comprehensive",
+                    "citations": 8,
+                    "technical_accuracy": 0.85
+                }
+            ],
+            "expected_metrics": {
+                "min_enrichment_score": 0.8,
+                "min_diversity_score": 0.7,
+                "max_processing_time_ms": 100,
+                "max_memory_mb": 10
+            }
+        }
+    ],
+    "error_scenarios": [
+        {
+            "name": "missing_fields",
+            "items": [
+                {
+                    "text": "Incomplete content"
+                },
+                {
+                    "sources": [
+                        "blog"
+                    ]
+                },
+                {
+                    "depth": "shallow"
+                }
+            ],
+            "expected_behavior": "skip_invalid"
+        },
+        {
+            "name": "invalid_values",
+            "items": [
+                {
+                    "text": "Test content",
+                    "sources": [
+                        "invalid_source"
+                    ],
+                    "depth": "invalid_depth",
+                    "citations": "invalid",
+                    "technical_accuracy": "invalid"
+                }
+            ],
+            "expected_behavior": "use_defaults"
+        }
+    ],
+    "performance_scenarios": [
+        {
+            "name": "rapid_enrichment",
+            "batch_size": 10,
+            "content_template": {
+                "text": "Performance test content {index}",
+                "sources": [
+                    "research_paper",
+                    "academic_journal"
+                ],
+                "depth": "comprehensive",
+                "citations": 10,
+                "technical_accuracy": 0.9
+            },
+            "requirements": {
+                "max_time_per_item_ms": 100,
+                "max_total_time_ms": 1000,
+                "max_memory_mb": 10
+            }
+        }
+    ],
+    "validation_requirements": {
+        "enrichment_thresholds": {
+            "min_enrichment_score": 0.8,
+            "min_diversity_score": 0.7,
+            "min_depth_score": 0.7
+        },
+        "performance_limits": {
+            "max_processing_time_ms": 100,
+            "max_memory_mb": 10,
+            "max_error_rate": 0.01
+        }
+    }
+}
