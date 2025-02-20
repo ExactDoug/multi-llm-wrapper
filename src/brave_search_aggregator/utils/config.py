@@ -68,10 +68,19 @@ class EnricherConfig:
     connection_timeout_sec: int = 30   # Connection timeout
     max_results: int = 20              # Results per query limit
 
-    # Streaming support
+    # Streaming Configuration
     enable_streaming: bool = True
-    batch_size: int = 3
+    streaming_batch_size: int = 3
     min_chunks_per_response: int = 3
+    max_event_delay_ms: int = 50
+    enable_progress_tracking: bool = True
+
+    # Streaming Metrics
+    enable_streaming_metrics: bool = True
+    track_streaming_timing: bool = True
+    track_chunk_sizes: bool = True
+    track_event_delays: bool = True
+    track_progress_updates: bool = True
 
     # Memory Management
     enable_memory_tracking: bool = True
@@ -273,11 +282,12 @@ class EnricherConfig:
             'requests_per_second': (1, None),
             'connection_timeout_sec': (1, None),
             'max_results': (1, None),
-            'batch_size': (1, None),
+            'streaming_batch_size': (1, None),
             'min_chunks_per_response': (1, None),
             'cleanup_timeout_sec': (1, None),
             'max_retries': (0, None),
-            'retry_delay_ms': (0, None)
+            'retry_delay_ms': (0, None),
+            'max_event_delay_ms': (10, 1000)  # Reasonable bounds for event delay
         }
 
         for field, (min_val, max_val) in int_fields.items():
@@ -301,7 +311,14 @@ class EnricherConfig:
             'enable_performance_tracking',
             'track_memory_usage',
             'track_error_rates',
-            'track_api_status'
+            'track_api_status',
+            # New streaming flags
+            'enable_streaming_metrics',
+            'track_streaming_timing',
+            'track_chunk_sizes',
+            'track_event_delays',
+            'track_progress_updates',
+            'enable_progress_tracking'
         ]
 
         for field in bool_fields:

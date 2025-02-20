@@ -2,6 +2,7 @@ from typing import AsyncGenerator, Dict, List, Optional, Union, Any
 from datetime import datetime
 import logging
 import asyncio
+import time
 
 from ..analyzer.query_analyzer import QueryAnalyzer, QueryAnalysis
 from ..fetcher.brave_client import BraveSearchClient
@@ -24,16 +25,38 @@ class BraveKnowledgeAggregator:
         self.query_analyzer = query_analyzer or QueryAnalyzer()
         self.knowledge_synthesizer = knowledge_synthesizer or KnowledgeSynthesizer()
         self.min_sources = 5
+        
+        # Initialize streaming metrics
+        self.streaming_metrics = {
+            'start_time': None,
+            'last_event_time': None,
+            'events_emitted': 0,
+            'total_chunks': 0,
+            'total_delay_ms': 0,
+            'max_delay_ms': 0
+        }
 
     async def process_query(
         self, query: str
     ) -> AsyncGenerator[Dict[str, Union[str, bool, Dict[str, Any]]], None]:
         """Process a query and yield results with streaming support."""
         try:
+            # Initialize streaming metrics
+            if self.config.enable_streaming_metrics:
+                self.streaming_metrics = {
+                    'start_time': None,
+                    'last_event_time': None,
+                    'events_emitted': 0,
+                    'total_chunks': 0,
+                    'total_delay_ms': 0,
+                    'max_delay_ms': 0
+                }
+
             # Get enhanced query analysis
             query_analysis = await self.query_analyzer.analyze_query(query)
             
             # Initial status with enhanced analysis
+            await self._track_streaming_event("analysis_complete")
             yield {
                 "type": "status",
                 "stage": "analysis_complete",
@@ -46,7 +69,8 @@ class BraveKnowledgeAggregator:
                     "confidence": query_analysis.input_type.confidence if query_analysis.input_type else None,
                     "insights": query_analysis.insights,
                     "performance_metrics": query_analysis.performance_metrics
-                }
+                },
+                "streaming_metrics": self._get_streaming_metrics() if self.config.enable_streaming_metrics else {}
             }
 
             # Handle unsuitable queries early
@@ -87,7 +111,11 @@ class BraveKnowledgeAggregator:
                     results.append(result)
                     analysis_batch.append(result)
                     
+                    # Track streaming metrics
+                    self.streaming_metrics['total_chunks'] += 1
+                    
                     # Stream individual result with enhanced context
+                    await self._track_streaming_event("search_result")
                     yield {
                         "type": "search_result",
                         "index": len(results),
@@ -97,15 +125,22 @@ class BraveKnowledgeAggregator:
                         "context": {
                             "relevance_score": self._calculate_relevance(result, query_analysis),
                             "matches_segments": self._check_segment_matches(result, query_analysis)
-                        }
+                        },
+                        "progress": {
+                            "percentage": min(100, (len(results) * 100) // self.config.max_results),
+                            "current": len(results),
+                            "total": self.config.max_results
+                        } if self.config.enable_progress_tracking else {},
+                        "streaming_metrics": self._get_streaming_metrics() if self.config.enable_streaming_metrics else {}
                     }
 
                     # Batch analysis based on configuration
-                    if len(analysis_batch) >= self.config.analyzer.analysis_batch_size:
+                    if len(analysis_batch) >= self.config.streaming_batch_size:
                         patterns = self._analyze_patterns(analysis_batch)
                         interim_knowledge = await self.knowledge_synthesizer.synthesize(analysis_batch)
                         
                         if patterns or interim_knowledge:
+                            await self._track_streaming_event("interim_analysis")
                             yield {
                                 "type": "interim_analysis",
                                 "results_analyzed": len(results),
@@ -115,13 +150,20 @@ class BraveKnowledgeAggregator:
                                 "performance": {
                                     "batch_size": len(analysis_batch),
                                     "processing_time": query_analysis.performance_metrics.get("processing_time_ms")
-                                }
+                                },
+                                "progress": {
+                                    "percentage": min(100, (len(results) * 100) // self.config.max_results),
+                                    "current": len(results),
+                                    "total": self.config.max_results
+                                } if self.config.enable_progress_tracking else {},
+                                "streaming_metrics": self._get_streaming_metrics() if self.config.enable_streaming_metrics else {}
                             }
                         analysis_batch = []
 
                     # Source selection when minimum reached
                     if len(results) >= self.min_sources and not selected_sources:
                         selected_sources = self._select_sources(results, query_analysis)
+                        await self._track_streaming_event("source_selection")
                         yield {
                             "type": "status",
                             "stage": "source_selection",
@@ -131,7 +173,13 @@ class BraveKnowledgeAggregator:
                             "selection_criteria": {
                                 "relevance_threshold": 0.7,
                                 "diversity_factor": 0.3
-                            }
+                            },
+                            "progress": {
+                                "percentage": min(100, (len(results) * 100) // self.config.max_results),
+                                "current": len(results),
+                                "total": self.config.max_results
+                            } if self.config.enable_progress_tracking else {},
+                            "streaming_metrics": self._get_streaming_metrics() if self.config.enable_streaming_metrics else {}
                         }
 
                 if not results:
@@ -144,6 +192,7 @@ class BraveKnowledgeAggregator:
 
                 # Final knowledge synthesis with enhanced context
                 final_knowledge = await self.knowledge_synthesizer.synthesize(results)
+                await self._track_streaming_event("final_synthesis")
                 yield {
                     "type": "final_synthesis",
                     "timestamp": datetime.now().isoformat(),
@@ -154,7 +203,13 @@ class BraveKnowledgeAggregator:
                         "ambiguity_handled": query_analysis.is_ambiguous,
                         "segments_analyzed": len(query_analysis.sub_queries) if query_analysis.sub_queries else 0,
                         "performance_metrics": query_analysis.performance_metrics
-                    }
+                    },
+                    "progress": {
+                        "percentage": 100,  # Final synthesis is complete
+                        "current": len(results),
+                        "total": self.config.max_results
+                    } if self.config.enable_progress_tracking else {},
+                    "streaming_metrics": self._get_streaming_metrics() if self.config.enable_streaming_metrics else {}
                 }
 
             except Exception as e:
@@ -292,6 +347,51 @@ class BraveKnowledgeAggregator:
                 matches.append(segment.content)
                 
         return matches
+
+    async def _track_streaming_event(self, event_type: str) -> None:
+        """Track streaming event metrics."""
+        if not self.config.enable_streaming_metrics:
+            return
+
+        current_time = time.time() * 1000  # Convert to milliseconds
+        
+        # Initialize metrics if this is the first event
+        if self.streaming_metrics['start_time'] is None:
+            self.streaming_metrics['start_time'] = current_time
+            self.streaming_metrics['last_event_time'] = current_time
+            return
+
+        # Calculate delay since last event
+        delay = current_time - self.streaming_metrics['last_event_time']
+        self.streaming_metrics['total_delay_ms'] += delay
+        self.streaming_metrics['max_delay_ms'] = max(self.streaming_metrics['max_delay_ms'], delay)
+        
+        # Update metrics
+        self.streaming_metrics['events_emitted'] += 1
+        self.streaming_metrics['last_event_time'] = current_time
+
+        # Apply event delay if configured
+        if self.config.max_event_delay_ms > 0:
+            await asyncio.sleep(self.config.max_event_delay_ms / 1000)  # Convert to seconds
+
+    def _get_streaming_metrics(self) -> Dict[str, Any]:
+        """Get current streaming metrics."""
+        if not self.config.enable_streaming_metrics or self.streaming_metrics['start_time'] is None:
+            return {}
+
+        current_time = time.time() * 1000
+        total_time = current_time - self.streaming_metrics['start_time']
+        
+        return {
+            'total_events': self.streaming_metrics['events_emitted'],
+            'total_chunks': self.streaming_metrics['total_chunks'],
+            'average_delay_ms': (self.streaming_metrics['total_delay_ms'] /
+                               max(1, self.streaming_metrics['events_emitted'])),
+            'max_delay_ms': self.streaming_metrics['max_delay_ms'],
+            'total_time_ms': total_time,
+            'events_per_second': (self.streaming_metrics['events_emitted'] * 1000 /
+                                max(1, total_time))
+        }
 
     def _get_query_suggestions(self, query_analysis: QueryAnalysis) -> List[str]:
         """Generate query suggestions based on analysis."""

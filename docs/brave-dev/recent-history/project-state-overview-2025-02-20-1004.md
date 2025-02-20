@@ -1,4 +1,4 @@
-# Project State Overview - 2025-02-20 10:36 AM
+# Project State Overview - 2025-02-20 05:03 AM
 
 ## Project Evolution
 
@@ -208,4 +208,7 @@ Focus will be on implementing the streaming enhancements as detailed in the impl
    - Current: Production ready
    - Status: Pending streaming enhancements
 
-This overview will be updated as the streaming enhancement implementation progresses. For detailed information about the streaming implementation, refer to the documents linked above.
+This overview will be updated as the streaming enhancement implementation progresses. For detailed information about the streaming implementation, refer to:
+- [Streaming Integration Plan](../knowledge-aggregator/streaming-integration-plan.md)
+- [Implementation Tasks](../knowledge-aggregator/streaming-implementation-tasks.md)
+- [Real-World Testing Strategy](../knowledge-aggregator/real-world-testing-strategy.md)
