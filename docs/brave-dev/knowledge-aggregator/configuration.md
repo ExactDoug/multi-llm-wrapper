@@ -1,5 +1,36 @@
 # Brave Search Knowledge Aggregator - Configuration Guide
 
+## Critical Configuration Issue
+
+### Duplicate Class Definitions
+The configuration system currently has duplicate class definitions in config.py that need to be resolved:
+
+1. Affected Classes:
+   - AnalyzerConfig (2 instances)
+   - QualityConfig (2 instances)
+   - EnricherConfig (2 instances)
+   - SourceValidationConfig (3 instances)
+
+2. Impact on Configuration:
+   - Parameter updates may not affect the correct class instance
+   - Configuration validation may be inconsistent
+   - Changes to one definition may not propagate correctly
+   - Maintenance and updates become error-prone
+
+3. Resolution Plan:
+   - Remove duplicate class definitions
+   - Maintain single source of truth for each config class
+   - Update all references to use correct instances
+   - Add clear file organization and documentation
+
+### Configuration Best Practices
+To prevent future configuration issues:
+1. Keep one definition per configuration class
+2. Use clear class naming and organization
+3. Document class relationships and dependencies
+4. Validate configuration changes thoroughly
+5. Maintain consistent parameter naming
+
 ## Environment Configuration
 
 ### Required Environment Variables
@@ -284,6 +315,31 @@ RATE_LIMIT_CONFIG = {
 ```
 
 ## Content Processing Configuration
+
+### Input Analysis Configuration
+```python
+# analyzer_config.py
+ANALYZER_CONFIG = {
+    'input_type_confidence_threshold': 0.8,  # Confidence threshold for input type detection
+    'min_complexity_score': 0.8,            # Minimum complexity score for analysis (previously named complexity_threshold)
+    'min_confidence_score': 0.7,            # Minimum confidence score for results
+    'required_depth': "comprehensive",       # Required analysis depth
+    'max_memory_mb': 10,                    # Maximum memory usage
+    'enable_streaming': True,               # Enable streaming analysis (previously named enable_streaming_analysis)
+    'batch_size': 3,                        # Analysis batch size (previously named analysis_batch_size)
+    'enable_segmentation': True,            # Enable query segmentation for complex queries
+    'max_segments': 5                       # Maximum number of segments per query
+}
+
+# IMPORTANT: Parameter Name Changes (Added Feb 21, 2025 1:55 PM)
+# The following parameter names have been standardized:
+# - complexity_threshold → min_complexity_score
+# - enable_streaming_analysis → enable_streaming
+# - analysis_batch_size → batch_size
+#
+# These changes ensure consistency across the codebase and match
+# the parameter names defined in AnalyzerConfig class.
+```
 
 ### Fetch Configuration (MVP)
 ```python

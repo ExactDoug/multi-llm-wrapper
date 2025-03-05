@@ -1,0 +1,125 @@
+{
+    "validation_tests": [
+        {
+            "text": "Comprehensive analysis of quantum computing applications",
+            "sources": [
+                "research_paper",
+                "academic_journal",
+                "expert_review"
+            ],
+            "depth": "comprehensive",
+            "citations": 15,
+            "technical_accuracy": 0.95,
+            "timestamp": 1740722757.5873854,
+            "expected_scores": {
+                "trust": 0.85,
+                "reliability": 0.9,
+                "authority": 0.85,
+                "freshness": 1.0
+            }
+        },
+        {
+            "text": "Overview of quantum computing basics",
+            "sources": [
+                "educational_site",
+                "blog"
+            ],
+            "depth": "intermediate",
+            "citations": 5,
+            "technical_accuracy": 0.8,
+            "timestamp": 1738130757.5873854,
+            "expected_scores": {
+                "trust": 0.7,
+                "reliability": 0.75,
+                "authority": 0.6,
+                "freshness": 0.8
+            }
+        },
+        {
+            "text": "Brief introduction to quantum computers",
+            "sources": [
+                "social_media"
+            ],
+            "depth": "shallow",
+            "citations": 1,
+            "technical_accuracy": 0.6,
+            "timestamp": 1725170757.5873854,
+            "expected_scores": {
+                "trust": 0.5,
+                "reliability": 0.55,
+                "authority": 0.4,
+                "freshness": 0.6
+            }
+        }
+    ],
+    "resource_constraint_scenarios": [
+        {
+            "name": "rate_limit_test",
+            "items": [
+                {
+                    "text": "Rate limit test content",
+                    "sources": [
+                        "research_paper"
+                    ],
+                    "depth": "comprehensive",
+                    "citations": 10,
+                    "technical_accuracy": 0.9
+                }
+            ],
+            "request_pattern": {
+                "burst_size": 5,
+                "total_requests": 25,
+                "interval_ms": 100
+            },
+            "expected_behavior": {
+                "max_requests_per_second": 20,
+                "recovery_time_ms": 100,
+                "error_handling": "throttle"
+            }
+        },
+        {
+            "name": "timeout_test",
+            "items": [
+                {
+                    "text": "Timeout test content",
+                    "sources": [
+                        "academic_journal"
+                    ],
+                    "depth": "comprehensive",
+                    "citations": 8,
+                    "technical_accuracy": 0.85,
+                    "delay_ms": 35000
+                }
+            ],
+            "expected_behavior": {
+                "connection_timeout_sec": 30,
+                "operation_timeout_sec": 25,
+                "cleanup_timeout_sec": 5,
+                "error_handling": "terminate"
+            }
+        },
+        {
+            "name": "results_limit_test",
+            "items": [
+                {
+                    "text": "Results limit test content {index}",
+                    "sources": [
+                        "expert_review"
+                    ],
+                    "depth": "comprehensive",
+                    "citations": 5,
+                    "technical_accuracy": 0.8
+                }
+            ],
+            "batch_config": {
+                "total_items": 25,
+                "batch_size": 5
+            },
+            "expected_behavior": {
+                "max_results": 20,
+                "overflow_behavior": "truncate",
+                "error_handling": "skip"
+            }
+        }
+    ]
+}

@@ -14,18 +14,35 @@ The analyzer must handle:
 ## Query Analysis Components
 
 ### 1. Input Type Detection
+- **Confidence Threshold**
+  - Configurable threshold (default 0.8)
+  - Controls type detection sensitivity
+  - Validates against AnalyzerConfig
+  - Ensures reliable classification
+
 - **Code Detection**
   - XML/HTML pattern matching
   - Code block indicators
   - Technical syntax patterns
+  - Pattern confidence scoring
+
 - **Log/Error Detection**
   - Timestamp patterns
   - Stack trace patterns
   - Error message formats
+  - Format confidence scoring
+
 - **Natural Language Detection**
   - Sentence structure analysis
   - Question patterns
   - Conversational indicators
+  - Structure confidence scoring
+
+- **Mixed Input Handling**
+  - Multiple type detection
+  - Confidence-based primary type selection
+  - Secondary type tracking
+  - Threshold-based type filtering
 
 ### 2. Complexity Analysis
 - **Structure Complexity**
@@ -59,14 +76,24 @@ The analyzer must handle:
   - Version-specific concepts
 
 ### 4. Query Segmentation
+- **Configuration**
+  - Configurable via enable_segmentation flag
+  - Maximum segments limited by max_segments (default: 5)
+  - Dynamic adjustment based on query complexity
+
 - **Natural Language Segmentation**
   - Question extraction
   - Topic separation
   - Context boundaries
+  - Segment relationship tracking
+  - Cross-segment reference handling
+
 - **Technical Segmentation**
   - Code block separation
   - Error context isolation
   - Log entry grouping
+  - Technical context preservation
+  - Language-specific segmentation rules
 
 ## Implementation Strategy
 

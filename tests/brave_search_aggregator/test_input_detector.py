@@ -6,8 +6,28 @@ from brave_search_aggregator.analyzer.input_detector import InputTypeDetector, I
 
 @pytest.fixture
 def detector():
-    """Create an InputTypeDetector instance for testing."""
-    return InputTypeDetector()
+    """Create an InputTypeDetector instance for testing with standard threshold."""
+    return InputTypeDetector(confidence_threshold=0.8)
+
+@pytest.fixture
+def lenient_detector():
+    """Create an InputTypeDetector with lower confidence threshold."""
+    return InputTypeDetector(confidence_threshold=0.3)
+
+def test_confidence_threshold_validation():
+    """Test confidence threshold validation."""
+    # Valid thresholds
+    InputTypeDetector(confidence_threshold=0.0)
+    InputTypeDetector(confidence_threshold=0.5)
+    InputTypeDetector(confidence_threshold=1.0)
+    
+    # Invalid thresholds
+    with pytest.raises(ValueError, match="must be between 0.0 and 1.0"):
+        InputTypeDetector(confidence_threshold=-0.1)
+    with pytest.raises(ValueError, match="must be between 0.0 and 1.0"):
+        InputTypeDetector(confidence_threshold=1.1)
+    with pytest.raises(ValueError, match="must be a number"):
+        InputTypeDetector(confidence_threshold="0.8")
 
 def test_detect_code():
     """Test detection of code input."""
@@ -136,3 +156,27 @@ def test_confidence_levels():
     """
     log_result = detector.detect_type(heavy_logs)
     assert log_result.confidence > 0.8
+
+def test_analyzer_config_threshold_integration():
+    """Test that InputTypeDetector correctly uses AnalyzerConfig threshold."""
+    from brave_search_aggregator.utils.config import AnalyzerConfig
+    
+    # Create AnalyzerConfig with custom threshold
+    config = AnalyzerConfig(input_type_confidence_threshold=0.75)
+    
+    # Create detector with config's threshold
+    detector = InputTypeDetector(confidence_threshold=config.input_type_confidence_threshold)
+    
+    # Verify threshold was properly set
+    assert detector.confidence_threshold == 0.75
+    
+    # Test with a clear code sample that should exceed the threshold
+    code_sample = """
+    def test_function():
+        x = 5
+        y = 10
+        return x + y
+    """
+    result = detector.detect_type(code_sample)
+    assert result.primary_type == InputType.CODE
+    assert result.confidence > config.input_type_confidence_threshold

@@ -1,0 +1,17 @@
+{
+  "customModes": [
+    {
+      "slug": "code",
+      "name": "Code",
+      "roleDefinition": "You are Roo, a highly skilled software engineer with extensive knowledge in many programming languages, frameworks, design patterns, and best practices",
+      "groups": [
+        "read",
+        "edit",
+        "browser",
+        "command",
+        "mcp"
+      ],
+      "customInstructions": "When starting a new dev session, always reference `docs/from-claude/plan.md` and update the coding status in `docs/from-claude/coding_status_tracker.md` as you complete or pause tasks. Use the status indicators (Not Started, In Progress, Blocked, Completed, Paused) to track progress. Record any issues encountered and their resolutions in the tracker."
+    }
+  ]
+}

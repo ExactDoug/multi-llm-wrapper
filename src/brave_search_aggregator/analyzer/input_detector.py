@@ -11,6 +11,7 @@ class InputType(Enum):
     NATURAL_LANGUAGE = auto()
     CODE = auto()
     LOG = auto()
+    ERROR_LOG = auto()
     MIXED = auto()
 
 @dataclass
@@ -47,8 +48,24 @@ class InputTypeDetector:
         'conversation': r'\b(?:I|you|we|they)\b.*\b(?:think|believe|want|need)\b',
     }
 
-    def __init__(self):
-        """Initialize the InputTypeDetector."""
+    def __init__(self, confidence_threshold: float = 0.8):
+        """
+        Initialize the InputTypeDetector.
+        
+        Args:
+            confidence_threshold: Minimum confidence threshold for type detection (0.0 to 1.0)
+            
+        Raises:
+            ValueError: If confidence_threshold is not between 0.0 and 1.0
+        """
+        if not isinstance(confidence_threshold, (int, float)):
+            raise ValueError(f"confidence_threshold must be a number, got {type(confidence_threshold)}")
+            
+        if not 0 <= confidence_threshold <= 1:
+            raise ValueError(f"confidence_threshold must be between 0.0 and 1.0, got {confidence_threshold}")
+        
+        self.confidence_threshold = confidence_threshold
+        
         # Compile regex patterns for efficiency
         self.code_regex = {k: re.compile(v, re.IGNORECASE) for k, v in self.CODE_PATTERNS.items()}
         self.log_regex = {k: re.compile(v) for k, v in self.LOG_PATTERNS.items()}

@@ -1,16 +1,68 @@
 """Configuration models for content enrichment and validation."""
-from dataclasses import dataclass
-from typing import Dict
+from dataclasses import dataclass, field
+from typing import Dict, List, Optional, Any
 
 @dataclass
 class Config:
     """Base configuration class."""
+    # API settings
+    brave_api_key: str = ""
+    max_results_per_query: int = 20
+    timeout_seconds: int = 30
+    rate_limit: int = 20
+    
+    # Performance settings
     max_memory_mb: int = 10
     enable_streaming: bool = True
     batch_size: int = 3
     requests_per_second: int = 20
     connection_timeout_sec: int = 30
     max_results: int = 20
+    enable_streaming_metrics: bool = True
+    max_event_delay_ms: int = 50
+    enable_progress_tracking: bool = True
+    streaming_batch_size: int = 3
+
+    # Component configurations
+    analyzer: Optional['AnalyzerConfig'] = None
+    fetcher: Optional['FetcherConfig'] = None
+    
+    def __post_init__(self):
+        """Initialize components if not provided."""
+        if self.analyzer is None:
+            self.analyzer = AnalyzerConfig()
+        if self.fetcher is None:
+            self.fetcher = FetcherConfig()
+
+@dataclass
+class FetcherConfig:
+    """Configuration for content fetching components."""
+    # Request settings
+    timeout_seconds: int = 30
+    max_content_size_bytes: int = 1024 * 1024  # 1MB
+    allow_redirects: bool = True
+    max_redirects: int = 3
+    headers: Dict[str, str] = field(default_factory=lambda: {
+        "User-Agent": "BraveSearchKnowledgeAggregator/1.0",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Language": "en-US,en;q=0.5",
+        "Accept-Encoding": "gzip, deflate, br"
+    })
+    
+    # Rate limiting
+    max_concurrent_fetches: int = 5
+    max_requests_per_domain: int = 2
+    semaphore_timeout_seconds: float = 5.0
+    domain_rate_limit_delay_seconds: float = 1.0
+    
+    # Caching
+    cache_ttl_seconds: int = 300  # 5 minutes
+    max_cache_size: int = 1000
+    
+    # Performance settings
+    enable_streaming: bool = True
+    batch_size: int = 3
+    max_memory_mb: int = 10
 
 @dataclass
 class QualityConfig:
@@ -177,14 +229,14 @@ class EnricherConfig:
                 raise ValueError(f"min_quality_score out of range: {min_quality_score}")
         except (TypeError, ValueError) as e:
             raise ValueError(f"Invalid min_enrichment_score: {e}")
-
+        
         try:
             min_confidence_score = float(self.min_diversity_score)
             if not 0 <= min_confidence_score <= 1:
                 raise ValueError(f"min_confidence_score out of range: {min_confidence_score}")
         except (TypeError, ValueError) as e:
             raise ValueError(f"Invalid min_diversity_score: {e}")
-
+        
         # Determine depth requirement with validation
         try:
             depth_score = float(self.min_depth_score)
@@ -198,7 +250,7 @@ class EnricherConfig:
             )
         except (TypeError, ValueError) as e:
             raise ValueError(f"Invalid min_depth_score: {e}")
-
+        
         # Validate performance settings
         try:
             max_memory = int(self.max_memory_mb)
@@ -206,14 +258,14 @@ class EnricherConfig:
                 raise ValueError(f"Invalid max_memory_mb: {max_memory}")
         except (TypeError, ValueError) as e:
             raise ValueError(f"Invalid max_memory_mb: {e}")
-
+        
         try:
             batch_size = int(self.batch_size)
             if batch_size <= 0:
                 raise ValueError(f"Invalid batch_size: {batch_size}")
         except (TypeError, ValueError) as e:
             raise ValueError(f"Invalid batch_size: {e}")
-
+        
         # Validate source weights
         if self.source_weights is not None:
             if not isinstance(self.source_weights, dict):
@@ -225,7 +277,7 @@ class EnricherConfig:
                         raise ValueError(f"Weight out of range for source {source}: {float_weight}")
                 except (TypeError, ValueError) as e:
                     raise ValueError(f"Invalid weight for source {source}: {e}")
-
+        
         # Validate quality metrics
         if self.quality_metrics is not None:
             if not isinstance(self.quality_metrics, dict):
@@ -237,7 +289,7 @@ class EnricherConfig:
                         raise ValueError(f"Metric out of range for {metric}: {float_value}")
                 except (TypeError, ValueError) as e:
                     raise ValueError(f"Invalid value for metric {metric}: {e}")
-
+        
         # Create config with validated values
         return QualityConfig(
             min_quality_score=min_quality_score,
@@ -249,7 +301,7 @@ class EnricherConfig:
             source_weights=self.source_weights,
             quality_metrics=self.quality_metrics
         )
-
+    
     def to_validation_config(self) -> 'SourceValidationConfig':
         """
         Convert EnricherConfig to SourceValidationConfig with type validation.
@@ -261,10 +313,10 @@ class EnricherConfig:
             ValueError: If required values are invalid
         """
         validated = {}
-
+        
         # Validate score thresholds
         for score_name in ['min_trust_score', 'min_reliability_score',
-                         'min_authority_score', 'min_freshness_score']:
+                        'min_authority_score', 'min_freshness_score']:
             try:
                 score = float(getattr(self, score_name))
                 if not 0 <= score <= 1:
@@ -272,7 +324,7 @@ class EnricherConfig:
                 validated[score_name] = score
             except (TypeError, ValueError) as e:
                 raise ValueError(f"Invalid {score_name}: {e}")
-
+        
         # Validate integer requirements
         int_fields = {
             'required_citations': (1, None),  # min, max (None for no max)
@@ -289,7 +341,7 @@ class EnricherConfig:
             'retry_delay_ms': (0, None),
             'max_event_delay_ms': (10, 1000)  # Reasonable bounds for event delay
         }
-
+        
         for field, (min_val, max_val) in int_fields.items():
             try:
                 value = int(getattr(self, field))
@@ -300,7 +352,7 @@ class EnricherConfig:
                 validated[field] = value
             except (TypeError, ValueError) as e:
                 raise ValueError(f"Invalid {field}: {e}")
-
+        
         # Validate boolean flags
         bool_fields = [
             'enable_streaming',
@@ -320,10 +372,10 @@ class EnricherConfig:
             'track_progress_updates',
             'enable_progress_tracking'
         ]
-
+        
         for field in bool_fields:
             validated[field] = bool(getattr(self, field))
-
+        
         # Create config with validated values
         return SourceValidationConfig(
             min_trust_score=validated['min_trust_score'],
@@ -338,7 +390,7 @@ class EnricherConfig:
             connection_timeout_sec=validated['connection_timeout_sec'],
             max_results=validated['max_results'],
             enable_streaming=validated['enable_streaming'],
-            batch_size=validated['batch_size'],
+            batch_size=validated['streaming_batch_size'],
             min_chunks_per_response=validated['min_chunks_per_response'],
             enable_memory_tracking=validated['enable_memory_tracking'],
             cleanup_timeout_sec=validated['cleanup_timeout_sec'],
@@ -352,8 +404,7 @@ class EnricherConfig:
             track_error_rates=validated['track_error_rates'],
             track_api_status=validated['track_api_status']
         )
-
-
+    
 @dataclass
 class SourceValidationConfig:
     """Configuration for source validation components."""
@@ -425,3 +476,60 @@ class SourceValidationConfig:
         'result_preservation',
         'cleanup_verification'
     ]
+
+@dataclass
+class AnalyzerConfig:
+    """Configuration for query analysis components."""
+    # Core analysis thresholds
+    min_complexity_score: float = 0.8
+    min_confidence_score: float = 0.7
+    input_type_confidence_threshold: float = 0.8
+    required_depth: str = "comprehensive"
+    
+    # Query segmentation settings
+    enable_segmentation: bool = True    # Enable query segmentation
+    max_segments: int = 5              # Maximum number of query segments
+    
+    # Performance settings
+    max_memory_mb: int = 10
+    enable_streaming: bool = True
+    batch_size: int = 3
+
+    # Query analysis metrics
+    query_metrics: Dict[str, float] = None
+
+    def __post_init__(self):
+        """Initialize and validate configuration."""
+        # Validate score thresholds
+        for name, value in [
+            ('min_complexity_score', self.min_complexity_score),
+            ('min_confidence_score', self.min_confidence_score),
+            ('input_type_confidence_threshold', self.input_type_confidence_threshold)
+        ]:
+            try:
+                float_val = float(value)
+                if not 0 <= float_val <= 1:
+                    raise ValueError(f"{name} must be between 0.0 and 1.0")
+            except (TypeError, ValueError) as e:
+                raise ValueError(f"Invalid {name}: {e}")
+        
+        # Validate segmentation settings
+        if not isinstance(self.enable_segmentation, bool):
+            raise ValueError("enable_segmentation must be a boolean")
+            
+        try:
+            max_segments = int(self.max_segments)
+            if max_segments <= 0:
+                raise ValueError(f"max_segments must be positive, got {max_segments}")
+            self.max_segments = max_segments
+        except (TypeError, ValueError) as e:
+            raise ValueError(f"Invalid max_segments: {e}")
+
+        # Initialize default metrics
+        if self.query_metrics is None:
+            self.query_metrics = {
+                "technical_accuracy": 0.4,
+                "source_quality": 0.3,
+                "depth_score": 0.2,
+                "citation_score": 0.1
+            }

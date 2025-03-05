@@ -242,3 +242,65 @@ async def test_resource_cleanup(config, mock_components):
         memory_diff = current_memory - start_memory
         
         assert memory_diff < 1, f"Memory not properly cleaned up: {memory_diff}MB retained"
+
+@pytest.mark.asyncio
+async def test_input_type_threshold_performance(mock_components):
+    """Test performance impact of different input type confidence thresholds."""
+    brave_client, query_analyzer, knowledge_synthesizer = mock_components
+    
+    # Test with different threshold values
+    thresholds = [0.3, 0.5, 0.8, 0.95]
+    timing_results = {}
+    
+    test_query = """
+    Here's a mixed input with code and text:
+    ```python
+    def example():
+        return "test"
+    ```
+    Can you explain what this does?
+    """
+    
+    for threshold in thresholds:
+        config = Config(
+            brave_api_key="test_key",
+            max_results_per_query=10,
+            timeout_seconds=30,
+            rate_limit=20,
+            analyzer=AnalyzerConfig(
+                max_memory_mb=10,
+                input_type_confidence_threshold=threshold,
+                complexity_threshold=0.7,
+                ambiguity_threshold=0.6,
+                enable_segmentation=True,
+                max_segments=5,
+                enable_streaming_analysis=True,
+                analysis_batch_size=3
+            )
+        )
+        
+        aggregator = BraveKnowledgeAggregator(
+            brave_client=brave_client,
+            config=config,
+            query_analyzer=query_analyzer,
+            knowledge_synthesizer=knowledge_synthesizer
+        )
+        
+        start_time = time.time()
+        async for result in aggregator.process_query(test_query):
+            if result["type"] == "status" and result["stage"] == "analysis_complete":
+                timing_results[threshold] = (time.time() - start_time) * 1000
+                break
+    
+    # Verify performance impact
+    for threshold, timing in timing_results.items():
+        assert timing < 100, f"Analysis with threshold {threshold} took {timing}ms (should be <100ms)"
+        
+    # Verify timing differences between thresholds are minimal
+    timing_differences = [
+        abs(timing_results[t2] - timing_results[t1])
+        for i, t1 in enumerate(thresholds[:-1])
+        for t2 in thresholds[i + 1:]
+    ]
+    max_diff = max(timing_differences)
+    assert max_diff < 20, f"Threshold changes caused significant timing variation: {max_diff}ms"

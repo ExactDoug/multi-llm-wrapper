@@ -40,12 +40,12 @@ aggregator_config = Config(
     analyzer=AnalyzerConfig(
         max_memory_mb=10,
         input_type_confidence_threshold=0.8,
-        complexity_threshold=0.7,
-        ambiguity_threshold=0.6,
+        min_complexity_score=0.7,
+        min_confidence_score=0.6,
         enable_segmentation=True,
         max_segments=5,
-        enable_streaming_analysis=True,
-        analysis_batch_size=3
+        enable_streaming=True,
+        batch_size=3
     )
 )
 
@@ -104,8 +104,8 @@ async def health_check() -> Dict[str, Any]:
         "feature_flags": test_server_config.features.get_enabled_features(),
         "analyzer_config": {
             "max_memory_mb": aggregator_config.analyzer.max_memory_mb,
-            "batch_size": aggregator_config.analyzer.analysis_batch_size,
-            "streaming_enabled": aggregator_config.analyzer.enable_streaming_analysis
+            "batch_size": aggregator_config.analyzer.batch_size,
+            "streaming_enabled": aggregator_config.analyzer.enable_streaming
         }
     }
 
@@ -120,12 +120,12 @@ async def get_config() -> Dict[str, Any]:
         "analyzer": {
             "max_memory_mb": aggregator_config.analyzer.max_memory_mb,
             "input_type_confidence_threshold": aggregator_config.analyzer.input_type_confidence_threshold,
-            "complexity_threshold": aggregator_config.analyzer.complexity_threshold,
-            "ambiguity_threshold": aggregator_config.analyzer.ambiguity_threshold,
+            "min_complexity_score": aggregator_config.analyzer.min_complexity_score,
+            "min_confidence_score": aggregator_config.analyzer.min_confidence_score,
             "enable_segmentation": aggregator_config.analyzer.enable_segmentation,
             "max_segments": aggregator_config.analyzer.max_segments,
-            "enable_streaming_analysis": aggregator_config.analyzer.enable_streaming_analysis,
-            "analysis_batch_size": aggregator_config.analyzer.analysis_batch_size
+            "enable_streaming": aggregator_config.analyzer.enable_streaming,
+            "batch_size": aggregator_config.analyzer.batch_size
         }
     }
 

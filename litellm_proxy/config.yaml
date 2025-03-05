@@ -39,12 +39,14 @@ model_list:
       model: groq/deepseek-r1-distill-llama-70b
       api_key: ${GROQ_API_KEY}
       service_tier: "flex"
+      reasoning_format: "hidden"
 
   - model_name: deepseek-r1-distill-llama-70b-specdec
     litellm_params:
       model: groq/deepseek-r1-distill-llama-70b-specdec
       api_key: ${GROQ_API_KEY}
       service_tier: "flex"
+      reasoning_format: "hidden"
 
   - model_name: llama-3.1-8b-instant
     litellm_params:
@@ -55,6 +57,12 @@ model_list:
   - model_name: llama-3.3-70b-versatile
     litellm_params:
       model: groq/llama-3.3-70b-versatile
+      api_key: ${GROQ_API_KEY}
+      service_tier: "flex"
+
+  - model_name: qwen-2.5-coder-32b
+    litellm_params:
+      model: groq/qwen-2.5-coder-32b
       api_key: ${GROQ_API_KEY}
       service_tier: "flex"
 

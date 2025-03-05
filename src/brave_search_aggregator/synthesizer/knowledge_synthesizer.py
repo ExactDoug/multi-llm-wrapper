@@ -22,6 +22,31 @@ class SynthesisResult:
     mode: SynthesisMode
     coherence_score: Optional[float] = None
     consistency_score: Optional[float] = None
+    
+    def get(self, key, default=None):
+        """Make SynthesisResult act like a dictionary."""
+        if key == 'type':
+            return 'content'
+        elif key == 'content':
+            return self.content
+        elif key == 'confidence':
+            return self.confidence_score
+        elif key == 'sources':
+            return self.sources
+        elif key == 'mode':
+            return self.mode.value if self.mode else None
+        elif key == 'coherence_score':
+            return self.coherence_score
+        elif key == 'consistency_score':
+            return self.consistency_score
+        return default
+        
+    def __getitem__(self, key):
+        """Allow dictionary-style access."""
+        result = self.get(key)
+        if result is None:
+            raise KeyError(f"Key '{key}' not found in SynthesisResult")
+        return result
 
 @dataclass
 class ModelRoute:
@@ -114,10 +139,26 @@ class KnowledgeSynthesizer:
             Combined knowledge with coherence score
         """
         # TODO: Implement actual vector operations
-        # For now, return simple combination
-        combined_content = "\n\n".join([
-            resp["content"] for resp in responses
-        ])
+        # Safely extract content from responses that could be search results
+        extracted_contents = []
+        for resp in responses:
+            if "content" in resp:
+                extracted_contents.append(resp["content"])
+            elif "description" in resp:
+                # Handle search results (which have description but no content)
+                extracted_contents.append(f"{resp.get('title', '')}: {resp.get('description', '')}")
+            elif isinstance(resp, dict):
+                # Try to extract something useful from the dict
+                values = [str(v) for k, v in resp.items() if isinstance(v, (str, int, float))]
+                if values:
+                    extracted_contents.append(". ".join(values))
+        
+        # If no content could be extracted, use a placeholder
+        if not extracted_contents:
+            extracted_contents = ["No content available"]
+            
+        # Combine the extracted content
+        combined_content = "\n\n".join(extracted_contents)
         
         return {
             "content": combined_content,
@@ -140,10 +181,29 @@ class KnowledgeSynthesizer:
             Merged response with consistency score
         """
         # TODO: Implement actual SLERP merging
-        # For now, return simple merge
-        merged_content = "\n\n".join([
-            resp["content"] for resp in responses
-        ])
+        # Safely extract content from responses that could be search results
+        extracted_contents = []
+        for resp in responses:
+            if "content" in resp:
+                extracted_contents.append(resp["content"])
+            elif "description" in resp:
+                # Handle search results (which have description but no content)
+                title = resp.get('title', 'No title')
+                desc = resp.get('description', 'No description')
+                url = resp.get('url', '')
+                extracted_contents.append(f"**{title}**\n{desc}" + (f"\n[{url}]({url})" if url else ""))
+            elif isinstance(resp, dict):
+                # Try to extract something useful from the dict
+                values = [str(v) for k, v in resp.items() if isinstance(v, (str, int, float))]
+                if values:
+                    extracted_contents.append(". ".join(values))
+        
+        # If no content could be extracted, use a placeholder
+        if not extracted_contents:
+            extracted_contents = ["No content available"]
+            
+        # Merge the extracted content
+        merged_content = "\n\n".join(extracted_contents)
         
         return {
             "content": merged_content,
@@ -152,29 +212,48 @@ class KnowledgeSynthesizer:
 
     async def synthesize(
         self,
-        query: str,
-        responses: List[Dict[str, str]],
+        query_or_responses,
+        responses = None,
         synthesis_mode: str = "research"
     ) -> SynthesisResult:
         """
         Synthesize responses into coherent output.
         
+        This method is overloaded to handle both:
+        1. synthesize(query, responses, synthesis_mode)
+        2. synthesize(responses) - where no query or mode is specified
+        
         Args:
-            query: Original user query
-            responses: List of model responses
+            query_or_responses: Either the original user query or a list of responses
+            responses: List of model responses (or None if first arg is responses)
             synthesis_mode: Desired synthesis mode
             
         Returns:
             SynthesisResult containing combined knowledge
         """
+        # Handle overloaded signatures
+        if responses is None:
+            # First argument is actually responses
+            responses = query_or_responses
+            query = "Unknown query"  # Default value when not provided
+        else:
+            # Normal case: query and responses provided
+            query = query_or_responses
+            
+        # Continue with the regular synthesis
         # Route query to appropriate models
         route = await self.route_query(query, synthesis_mode)
         
         # Filter responses to only use selected models
-        filtered_responses = [
-            resp for resp in responses
-            if resp.get("model") in route.selected_models
-        ]
+        if route.selected_models:
+            filtered_responses = [
+                resp for resp in responses
+                if resp.get("model") in route.selected_models
+            ]
+            if not filtered_responses:  # If no matches, use all responses
+                filtered_responses = responses
+        else:
+            filtered_responses = responses
         
         # Combine knowledge using task vectors
         combined = await self.combine_knowledge(filtered_responses)
@@ -182,6 +261,21 @@ class KnowledgeSynthesizer:
         # Merge responses using SLERP
         merged = await self.merge_responses(filtered_responses)
         
+        # When response list is empty, create simple result
+        if not filtered_responses:
+            if isinstance(query, str) and len(query) > 0:
+                content = f"No results found for: {query}"
+            else:
+                content = "No results available"
+            return SynthesisResult(
+                content=content,
+                confidence_score=0.5,
+                sources=[],
+                mode=route.synthesis_mode,
+                coherence_score=0.5,
+                consistency_score=0.5
+            )
+            
         return SynthesisResult(
             content=merged["content"],
             confidence_score=route.routing_confidence,

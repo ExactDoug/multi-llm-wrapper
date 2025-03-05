@@ -4,6 +4,7 @@ Pytest configuration and fixtures.
 import os
 from typing import AsyncGenerator, Generator
 import pytest
+import psutil
 import aiohttp
 from dotenv import load_dotenv
 
@@ -11,6 +12,11 @@ from brave_search_aggregator.utils.config import Config
 from brave_search_aggregator.fetcher.brave_client import BraveSearchClient
 from brave_search_aggregator.analyzer.query_analyzer import QueryAnalyzer
 from brave_search_aggregator.synthesizer.knowledge_synthesizer import KnowledgeSynthesizer
+
+def get_process_memory() -> float:
+    """Get current process memory usage in MB."""
+    process = psutil.Process(os.getpid())
+    return process.memory_info().rss / (1024 * 1024)
 
 # Load test environment variables
 load_dotenv(".env.test", override=True)
@@ -22,7 +28,11 @@ def config() -> Config:
         brave_api_key="test_key",
         max_results_per_query=5,
         timeout_seconds=5,
-        rate_limit=10
+        rate_limit=10,
+        enable_streaming_metrics=True,
+        streaming_batch_size=3,
+        max_event_delay_ms=50,
+        enable_progress_tracking=True
     )
 
 @pytest.fixture
@@ -109,6 +119,53 @@ def azure_credentials() -> dict:
         "client_id": "test_client_id",
         "client_secret": "test_client_secret",
         "tenant_id": "test_tenant_id"
+    }
+
+@pytest.fixture
+def browser_test_config() -> dict:
+    """Provide browser test configuration."""
+    return {
+        "viewport": {
+            "width": 1280,
+            "height": 800
+        },
+        "performance": {
+            "min_fps": 30,
+            "max_frame_time_ms": 33,  # ~30fps
+            "max_memory_mb": 10  # Critical requirement: 10MB per request
+        },
+        "streaming": {
+            "max_first_chunk_ms": 100,  # Critical requirement: First Status < 100ms
+            "max_first_result_ms": 1000,  # Critical requirement: First Result < 1s
+            "max_source_selection_ms": 3000,  # Critical requirement: Source Selection < 3s
+            "min_chunks": 3
+        }
+    }
+
+@pytest.fixture
+def streaming_test_config() -> dict:
+    """Provide streaming test configuration."""
+    return {
+        "timing": {
+            "max_first_chunk_ms": 100,  # Critical requirement: First Status < 100ms
+            "max_first_result_ms": 1000,  # Critical requirement: First Result < 1s
+            "max_source_selection_ms": 3000,  # Critical requirement: Source Selection < 3s
+            "max_time_between_chunks_ms": 50
+        },
+        "memory": {
+            "max_memory_mb": 10,  # Critical requirement: 10MB per request
+            "check_interval_ms": 100
+        },
+        "resource_constraints": {
+            "max_requests_per_second": 20,  # Critical requirement: API Rate Limit
+            "connection_timeout_sec": 30,  # Critical requirement: Connection Timeout
+            "max_results": 20  # Critical requirement: Max Results Per Query
+        },
+        "error_rate": {
+            "max_error_rate": 0.01  # Critical requirement: Error Rate < 1%
+        },
+        "batch_size": 3,
+        "min_chunks": 3
     }
 
 @pytest.fixture

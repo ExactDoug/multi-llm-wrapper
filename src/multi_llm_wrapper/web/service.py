@@ -1,4 +1,5 @@
 from typing import AsyncGenerator, Dict, Any, Optional
+import os
 from datetime import datetime, timedelta
 import json
 from ..wrapper import LLMWrapper
@@ -80,43 +81,85 @@ class LLMService:
                 try:
                     # Use BraveKnowledgeAggregator for enhanced processing
                     from brave_search_aggregator.synthesizer.brave_knowledge_aggregator import BraveKnowledgeAggregator
-                    aggregator = BraveKnowledgeAggregator(self.wrapper.brave_search)
+                    from brave_search_aggregator.utils.config import Config
+
+                    # Get API key from environment or wrapper config
+                    # The wrapper.brave_search uses a different client class that stores API key in config.api_key
+                    api_key = os.getenv("BRAVE_API_KEY", "")
+                    if not api_key and hasattr(self.wrapper.brave_search, 'config'):
+                        api_key = self.wrapper.brave_search.config.api_key
                     
-                    # Process query through specialized pipeline and transform to standard model format
-                    async for result in aggregator.process_query(query):
-                        if result['type'] == 'content':
-                            # Transform rich format to standard model format while preserving metadata
-                            transformed_content = {
-                                'type': 'content',
-                                'status': 'success',
-                                'content': result['content'],
-                                'model_metadata': {
-                                    'model': 'brave_search',
-                                    'source': result.get('source', 'brave_search'),
-                                    'confidence': result.get('confidence', 1.0),
-                                    'title': result.get('title'),
-                                    'query_analysis': result.get('query_analysis'),
-                                    'knowledge_synthesis': result.get('knowledge_synthesis')
+                    if not api_key:
+                        yield f"data: {json.dumps({'type': 'error', 'message': 'Brave Search API key not found in environment or configuration'})}\n\n"
+                        return
+
+                    # Create configuration
+                    config = Config(
+                        brave_api_key=api_key,
+                        max_results_per_query=20,
+                        timeout_seconds=30,
+                        rate_limit=20,
+                        enable_streaming=True
+                    )
+
+                    # Create aggregator with client and config
+                    aggregator = BraveKnowledgeAggregator(
+                        brave_client=self.wrapper.brave_search,
+                        config=config
+                    )
+                    
+                    try:
+                        # Process query with proper async iteration
+                        async for result in aggregator.process_query(query):
+                            # Process the result
+                            if result['type'] == 'content':
+                                # Transform rich format to standard model format while preserving metadata
+                                transformed_content = {
+                                    'type': 'content',
+                                    'status': 'success',
+                                    'content': result.get('content', ''),
+                                    'model_metadata': {
+                                        'model': 'brave_search',
+                                        'source': result.get('source', 'brave_search'),
+                                        'confidence': result.get('confidence', 1.0),
+                                        'title': result.get('title'),
+                                        'query_analysis': result.get('query_analysis'),
+                                        'knowledge_synthesis': result.get('knowledge_synthesis')
+                                    }
                                 }
-                            }
-                            # Accumulate complete response while preserving structure
-                            if result.get('content'):
-                                complete_response.append(result['content'])
-                            yield f"data: {json.dumps(transformed_content)}\n\n"
-                        elif result['type'] == 'error':
-                            # Enhanced error format standardization
-                            error_content = {
-                                'type': 'error',
-                                'status': 'error',
-                                'message': result.get('error') or result.get('message', 'Unknown error'),
-                                'code': result.get('code', 'BRAVE_SEARCH_ERROR'),
-                                'model_metadata': {
-                                    'model': 'brave_search',
-                                    'phase': result.get('phase', 'unknown'),
-                                    'recoverable': result.get('recoverable', False)
+                                # Accumulate complete response while preserving structure
+                                if result.get('content'):
+                                    complete_response.append(result['content'])
+                                yield f"data: {json.dumps(transformed_content)}\n\n"
+                            elif result['type'] == 'error':
+                                # Enhanced error format standardization
+                                error_content = {
+                                    'type': 'error',
+                                    'status': 'error',
+                                    'message': result.get('error') or result.get('message', 'Unknown error'),
+                                    'code': result.get('code', 'BRAVE_SEARCH_ERROR'),
+                                    'model_metadata': {
+                                        'model': 'brave_search',
+                                        'phase': result.get('phase', 'unknown'),
+                                        'recoverable': result.get('recoverable', False)
+                                    }
                                 }
+                                yield f"data: {json.dumps(error_content)}\n\n"
+                    except Exception as iteration_error:
+                        # Handle any unexpected errors during iteration
+                        error_content = {
+                            'type': 'error',
+                            'status': 'error',
+                            'message': f"Error during result iteration: {str(iteration_error)}",
+                            'code': 'BRAVE_SEARCH_ITERATION_ERROR',
+                            'model_metadata': {
+                                'model': 'brave_search',
+                                'phase': 'iteration',
+                                'recoverable': False,
+                                'error_type': iteration_error.__class__.__name__
                             }
-                            yield f"data: {json.dumps(error_content)}\n\n"
+                        }
+                        yield f"data: {json.dumps(error_content)}\n\n"
                 except Exception as e:
                     # Enhanced error handling with standardized format and metadata
                     error_content = {
@@ -137,9 +180,10 @@ class LLMService:
                     if hasattr(aggregator, 'close'):
                         await aggregator.close()
             else:
+                # Handle regular models with standard approach
                 # Get the stream generator for LLM responses
                 stream = await self.wrapper.query(query, model=model, stream=True)
-                
+            
                 # Stream responses
                 async for chunk in stream:
                     if isinstance(chunk, dict):
@@ -185,7 +229,7 @@ class LLMService:
             ]
             
             for idx, response in sorted(stored_responses['responses'].items()):
-                model_name = model_names[idx]
+                model_name = model_names[int(idx)] if int(idx) < len(model_names) else f"Model {idx}"
                 synthesis_prompt += f"=== {model_name} Response ===\n{response}\n\n"
             
             synthesis_prompt += "\nProvide a comprehensive yet concise synthesis that:\n"
