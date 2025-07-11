@@ -58,10 +58,10 @@ class LLMService:
                 "claude-3-sonnet-20240229",  # 1: Claude 3 Sonnet
                 "gpt-4",                     # 2: GPT-4
                 "gpt-3.5-turbo",            # 3: GPT-3.5 Turbo
-                "groq/mixtral-8x7b-32768",       # 4: Groq Mixtral
+                "groq/mistral-saba-24b",       # 4: Groq Mistral
                 "groq/llama3-8b-8192",           # 5: Groq LLaMA 3
-                "sonar-small",              # 6: Perplexity Sonar Small
-                "sonar-large",              # 7: Perplexity Sonar Large
+                "sonar",              # 6: Perplexity Sonar
+                "sonar-pro",              # 7: Perplexity Sonar Pro
                 "gemini-1.5-flash",         # 8: Google Gemini 1.5 Flash
                 "brave_search",              # 9: Brave Search
                 "groq_proxy/llama2-70b-8192" # 10: Groq Proxy Llama2
@@ -220,10 +220,10 @@ class LLMService:
                 "Claude 3 Sonnet",
                 "GPT-4",
                 "GPT-3.5 Turbo",
-                "Groq Mixtral",
+                "Groq Mistral",
                 "Groq LLaMA 3",
-                "Perplexity Sonar Small",
-                "Perplexity Sonar Large",
+                "Perplexity Sonar",
+                "Perplexity Sonar Pro",
                 "Google Gemini Pro",
                 "Brave Search Results"
             ]

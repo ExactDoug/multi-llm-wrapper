@@ -5,7 +5,7 @@ export const llmTitles = {
     1: 'Claude 3 Sonnet',
     2: 'GPT-4',
     3: 'GPT-3.5 Turbo',
-    4: 'Groq Mixtral',
+    4: 'Groq Mistral',
     5: 'Groq LLaMA 3',
     6: 'Perplexity Sonar Small',
     7: 'Perplexity Sonar Large',

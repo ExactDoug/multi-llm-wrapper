@@ -27,7 +27,7 @@ async def main():
     async for chunk in await wrapper.query(
         prompt=prompts["groq"],
         stream=True,
-        model="mixtral-8x7b-32768"
+        model="mistral-saba-24b"
     ):
         if chunk["status"] == "error":
             print(f"Error: {chunk['error']}")

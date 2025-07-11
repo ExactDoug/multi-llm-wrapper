@@ -55,7 +55,7 @@ class GroqConfig(ProviderConfig):
     """Groq-specific configuration"""
     def __post_init__(self):
         self.model_map = {
-            "mixtral-8x7b-32768": "groq/mixtral-8x7b-32768",
+            "mistral-saba-24b": "groq/mistral-saba-24b",
             "llama3-8b-8192": "groq/llama3-8b-8192"
         }
 
@@ -64,8 +64,8 @@ class PerplexityConfig(ProviderConfig):
     """Perplexity-specific configuration"""
     def __post_init__(self):
         self.model_map = {
-            "sonar-small": "perplexity/llama-3.1-sonar-small-128k-online",
-            "sonar-large": "perplexity/llama-3.1-sonar-large-128k-online",
+            "sonar": "perplexity/sonar",
+            "sonar-pro": "perplexity/sonar-pro",
             "sonar-huge": "perplexity/llama-3.1-sonar-huge-128k-online"
         }
 

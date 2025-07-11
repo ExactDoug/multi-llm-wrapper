@@ -79,9 +79,9 @@ model_list:
     litellm_params:
       model: claude-3-sonnet-20240229
       api_key: ${ANTHROPIC_API_KEY}
-  - model_name: mixtral-8x7b-32768
+  - model_name: mistral-saba-24b
     litellm_params:
-      model: groq/mixtral-8x7b-32768
+      model: groq/mistral-saba-24b
       api_key: ${GROQ_API_KEY}
   - model_name: sonar-small
     litellm_params:
