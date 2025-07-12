@@ -7,8 +7,8 @@ export const llmTitles = {
     3: 'GPT-3.5 Turbo',
     4: 'Groq Mistral',
     5: 'Groq LLaMA 3',
-    6: 'Perplexity Sonar Small',
-    7: 'Perplexity Sonar Large',
+    6: 'Perplexity Sonar',
+    7: 'Perplexity Sonar Pro',
     8: 'Google Gemini 1.5 Flash'
 };
 

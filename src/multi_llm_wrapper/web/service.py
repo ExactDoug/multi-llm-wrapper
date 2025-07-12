@@ -206,17 +206,22 @@ class LLMService:
     async def stream_synthesis(self, session_id: str) -> AsyncGenerator[str, None]:
         """Stream the synthesis of all LLM responses using Groq LLaMA 3."""
         try:
-            # Get stored responses for the session
             stored_responses = self.get_responses(session_id)
             if not stored_responses:
                 raise ValueError("No responses found for synthesis")
-                
-            # Create synthesis prompt with original query
+
             original_query = stored_responses.get('query', 'No query available')
-            synthesis_prompt = f"Original User Query:\n{original_query}\n\nAnalyze and synthesize the following AI responses to this query:\n\n"
+
+            # Build up the synthesis prompt by merging your analysis methodology & formatting rules
+            synthesis_prompt = f"""Original User Query:
+            {original_query}
             
-            model_names = [
-                "Claude 3 Opus",
+            # RESPONSES FOR ANALYSIS, COMPARISON & CLARIFICATION PER THE ABOVE INSTRUCTIONS:
+            
+            """
+
+            # Add all collected model responses, labeled by index/model name
+            model_names = [            "Claude 3 Opus",
                 "Claude 3 Sonnet",
                 "GPT-4",
                 "GPT-3.5 Turbo",
@@ -227,43 +232,73 @@ class LLMService:
                 "Google Gemini Pro",
                 "Brave Search Results"
             ]
-            
-            for idx, response in sorted(stored_responses['responses'].items()):
-                model_name = model_names[int(idx)] if int(idx) < len(model_names) else f"Model {idx}"
+            for idx, response in sorted(stored_responses['responses'].items()): # Removed the key lambda
+                try:
+                    model_index = int(idx)  # Try converting to int; handle exceptions if it fails
+                    model_name = model_names[model_index] if model_index < len(model_names) else f"Model {idx}"
+                except ValueError:
+                    model_name = f"Model {idx}" # Handle non-integer keys
                 synthesis_prompt += f"=== {model_name} Response ===\n{response}\n\n"
+
+            # Now include the specific formatting and content instructions
+            synthesis_prompt += """
+            ## When synthesizing, ensure that your response:
+            1. **Merges all unanimous responses** into a single answer directly addressing the original query.
+            2. Is written as if from a single **subject matter expert** with broader knowledge than any single LLM.
+            3. **Preserves all unique and nuanced details, and displays them as such** (possibly unique or conflicting information).
+            4. If there are conflicts, **present them clearly** as such, rather than omitting them.
+            5. Be as **concise as possible, while fully complying** with all requirements above.
+            6. Use/retain **markdown** as appropriate.
+            7. Retain **links/references to sources**, especially URLs from search results, so the user can verify.
+            8. Tune your response to match any **user-requested format**, e.g., "be brief" or "be concise".
+            9. If any LLMs diverge from requested format, you may summarize/reformat their content for consistency, but **always incorporate their unique information while adhering to the above.**.
+            10. Do not provide verbose output to the user such as "now I will", or "based on all the knowledge sources", or "here is the prompt you can paste", etc.
+            11. ABSOLUTELY ALWAYS APPEND at the end of the response, a `Request for clarification` section that adheres to the `truth-serum-iterative-clarification-process`. NO MATTER WHAT, YOU MUST ALWAYS INCLUDE THIS SECTION, even if you think the information is clear. This is critical for the iterative clarification process.
             
-            synthesis_prompt += "\nProvide a comprehensive yet concise synthesis that:\n"
-            synthesis_prompt += "1. Merges all responses into a single response that directly addresses the user's original query\n"
-            synthesis_prompt += "2. Presents the response as though from a single SME (subject matter expert) with access to a broader and more nuanced knowledgebase than any 1 LLM would have\n"
-            synthesis_prompt += "3. Treats Brave Search results as factual context to verify and enhance LLM responses\n"
-            synthesis_prompt += "4. Uses search results to validate claims made by LLMs where possible\n"
-            synthesis_prompt += "5. Preserves all unique (or possibly unique) details, including more nuanced details\n"
-            synthesis_prompt += "6. For more-nuanced or minority details, presents them as such, in order to not give overconfidence in a detail that is seemingly less common, though potentially could still be highly-beneficial\n"
-            synthesis_prompt += "7. If the request/prompt is for research, coding or development: Identifies key agreements and disagreements\n"
-            synthesis_prompt += "8. If there are conflicting responses (discrepancies), rather than omitting these, present these details accordingly in a clear intuitive way\n"
-            synthesis_prompt += "9. Is as concise as possible, while still being incredibly useful and high-value, and adhering to the above requirements\n"
-            synthesis_prompt += "10. Uses/preserves markdown as/when appropriate\n"
-            synthesis_prompt += "11. Preserves links and/or references to various sources, especially URLs from search results, so the user is able to go verify the answers themselves\n"
-            synthesis_prompt += "12. Attempt to respond to the user in such a way that would be appropriate based on their request (while utilizing the additional information from the other LLMs and search results in an appropriate way)\n"
-            synthesis_prompt += "13. Respect the user's requested answer format. If they say 'be brief' or 'be concise', give them a brief/concise response while still utilizing all the aggregated knowledge sources to the extent possible\n"
-            synthesis_prompt += "14. If any LLMs diverge from the requested format, you are not obligated to represent them in their entirety. Although we want you to incorporate and consider the information they add, we don't want this to cause the user to no longer receive the type of response they are requesting (in terms of the format of the response)\n"
+            # truth-serum-iterative-clarification-process
+
+                1. Analyze each of the data/knowledge reports/findings/details provided from each knowledge source.
+
+                2. Identify each distinct set of data/knowledge reports/findings/details by cryptic but consistent names or designations (call these "knowledge sources," assign a usable but not human-meaningful label).
+
+                3. Compare information across the knowledge sources and classify items into:
+                - a) Clearly overt unanimous agreements.
+                - b) Possibly unanimous information (potentially ambiguous due to lack of explicitness).
+                - c) Clearly ambiguous, vague, or non-specific information.
+                - d) Clearly overt disagreements/discrepancies with explicit conflicts.
+                - e) Potentially unique information found in only 1-2 sources (may be either a valuable insight or an anomaly).
+
+                4. **Provide a concise, detailed bullet-point list** for each of these classifications.
+
+                5. **Draft a user prompt/request** (for clarification) that could be pasted into each knowledge source, requesting them to:
+                - Clarify all areas not classified as clear, overt, unanimous agreements.
+                - List for each unclear/conflicting/ambiguous item: what was unclear/conflicting, and include supporting URLs/references cited by each source.
+                - Request sources to double-check their previous answers and manually check each cited URL/source (and use web search for any URLs they cannot fetch, recursively, to reconstruct as much information as possible from search snippets).
+                - Instruct sources to consider the recency and reputation of URLs/sources; prioritize current, reputable information.
+                - If unable to fetch a page, recommend using web search scoped to that URL to gather snippets recursively and reconstruct content.
+                - Require a full bibliography at the end of their response: full URLs, brief titles, and relevance/explanation for each source.
+                (create only 1 clarification request prompt to be used by all knowledge sources)
+
+                6. When new clarifications are received, repeat steps 3-5 recursively until all discrepancies are resolved.
             
-            # Get the stream generator
+            end-of-truth-serum-iterative-clarification-process
+            """
+
+            # Execute the query to the Groq LLaMA 3 model as a stream
             stream = await self.wrapper.query(
                 synthesis_prompt,
                 model="groq/llama3-8b-8192",
                 stream=True
             )
-            
-            # Stream synthesis
+
             async for chunk in stream:
                 if isinstance(chunk, dict):
-                    if chunk['status'] == 'error':
-                        yield f"data: {json.dumps({'type': 'error', 'message': chunk['error']})}\n\n"
+                    if chunk.get('status') == 'error':
+                        yield f"data: {json.dumps({'type': 'error', 'message': chunk.get('error')})}\n\n"
                         break
-                    elif chunk['status'] == 'success' and chunk.get('content'):
+                    elif chunk.get('status') == 'success' and chunk.get('content'):
                         yield f"data: {json.dumps({'type': 'content', 'content': chunk['content']})}\n\n"
-            
+
             yield f"data: {json.dumps({'type': 'done'})}\n\n"
         except Exception as e:
             yield f"data: {json.dumps({'type': 'error', 'message': str(e)})}\n\n"

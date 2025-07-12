@@ -128,8 +128,8 @@ class LLMService:
                 "GPT-3.5 Turbo",
                 "Groq Mistral",
                 "Groq LLaMA 3",
-                "Perplexity Sonar Small",
-                "Perplexity Sonar Large",
+                "Perplexity Sonar",
+                "Perplexity Sonar Pro",
                 "Google Gemini Pro",
                 "Brave Search Results"
             ]
