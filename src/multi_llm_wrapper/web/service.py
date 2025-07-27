@@ -213,47 +213,46 @@ class LLMService:
             original_query = stored_responses.get('query', 'No query available')
 
             # Build up the synthesis prompt by merging your analysis methodology & formatting rules
-            synthesis_prompt = f"""Original User Query:
-            {original_query}
+            # synthesis_prompt = f"""Original User Query:
+            # {original_query}
             
-            # RESPONSES FOR ANALYSIS, COMPARISON & CLARIFICATION PER THE ABOVE INSTRUCTIONS:
-            
+            synthesis_prompt = f"""Please analyze & compare the data from the following knowledge sources::
+                        
             """
 
             # Add all collected model responses, labeled by index/model name
-            model_names = [            "Claude 3 Opus",
-                "Claude 3 Sonnet",
-                "GPT-4",
-                "GPT-3.5 Turbo",
-                "Groq Mistral",
-                "Groq LLaMA 3",
-                "Perplexity Sonar",
-                "Perplexity Sonar Pro",
-                "Google Gemini Pro",
-                "Brave Search Results"
+            model_names = [            "SOURCE 1",
+                "SOURCE 2",
+                "SOURCE 3",
+                "SOURCE 4",
+                "SOURCE 5",
+                "SOURCE 6",
+                "SOURCE 7",
+                "SOURCE 8",
+                "SOURCE 9",
+                "SOURCE 10"
             ]
             for idx, response in sorted(stored_responses['responses'].items()): # Removed the key lambda
                 try:
                     model_index = int(idx)  # Try converting to int; handle exceptions if it fails
                     model_name = model_names[model_index] if model_index < len(model_names) else f"Model {idx}"
                 except ValueError:
-                    model_name = f"Model {idx}" # Handle non-integer keys
+                    model_name = f"Knowledge Source: {idx}" # Handle non-integer keys
                 synthesis_prompt += f"=== {model_name} Response ===\n{response}\n\n"
 
             # Now include the specific formatting and content instructions
             synthesis_prompt += """
-            ## When synthesizing, ensure that your response:
-            1. **Merges all unanimous responses** into a single answer directly addressing the original query.
+            ## For your analysis, ensure that your response:
+            1. **Merges all unanimous responses** into a single answer (and clearly state this was unanimous).
             2. Is written as if from a single **subject matter expert** with broader knowledge than any single LLM.
-            3. **Preserves all unique and nuanced details, and displays them as such** (possibly unique or conflicting information).
+            3. **Preserves all unique and nuanced details, and displays them as such** (as possibly unique or conflicting information).
             4. If there are conflicts, **present them clearly** as such, rather than omitting them.
             5. Be as **concise as possible, while fully complying** with all requirements above.
             6. Use/retain **markdown** as appropriate.
             7. Retain **links/references to sources**, especially URLs from search results, so the user can verify.
-            8. Tune your response to match any **user-requested format**, e.g., "be brief" or "be concise".
-            9. If any LLMs diverge from requested format, you may summarize/reformat their content for consistency, but **always incorporate their unique information while adhering to the above.**.
-            10. Do not provide verbose output to the user such as "now I will", or "based on all the knowledge sources", or "here is the prompt you can paste", etc.
-            11. ABSOLUTELY ALWAYS APPEND at the end of the response, a `Request for clarification` section that adheres to the `truth-serum-iterative-clarification-process`. NO MATTER WHAT, YOU MUST ALWAYS INCLUDE THIS SECTION, even if you think the information is clear. This is critical for the iterative clarification process.
+            8. Be as concise as possible, while still providing a clearly human-readable response. Full sentences are not required.
+            9. Do not provide verbose output to the user such as "now I will", or "based on all the knowledge sources", or "here is the prompt you can paste", etc.
+            10. ABSOLUTELY ALWAYS APPEND at the end of the response, a `Request for clarification` section that adheres to the `truth-serum-iterative-clarification-process`. NO MATTER WHAT, YOU MUST ALWAYS INCLUDE THIS SECTION, even if you think the information is clear. This is critical for the iterative clarification process.
             
             # truth-serum-iterative-clarification-process
 

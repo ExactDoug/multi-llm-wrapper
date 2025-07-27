@@ -47,7 +47,7 @@ TEST_SERVER_CONFIG = {
 ### 1. Server Launch Script
 ```powershell
 # test-server.ps1
-& C:\dev\venvs\multi-llm-wrapper\Scripts\Activate.ps1
+& $env:DEV_ROOT\venvs\multi-llm-wrapper\Scripts\Activate.ps1
 $env:TEST_ENV="true"
 uvicorn brave_search_aggregator.test_server:app --host 0.0.0.0 --port 8001 --reload
 ```

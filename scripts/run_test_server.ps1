@@ -1,7 +1,7 @@
 # PowerShell script to launch the Brave Search Knowledge Aggregator test server
 param(
     [string]$EnvFile = ".env.test",
-    [string]$VenvPath = "C:\dev\venvs\multi-llm-wrapper\Scripts\Activate.ps1"
+    [string]$VenvPath = "$env:DEV_ROOT\venvs\multi-llm-wrapper\Scripts\Activate.ps1"
 )
 
 # Function to load environment variables from file
