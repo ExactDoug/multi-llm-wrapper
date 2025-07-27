@@ -1,0 +1,9 @@
+{
+  "test_name": "ambiguity_detector",
+  "started": "2025-07-18T22:36:23-06:00",
+  "current_step": 11,
+  "status": "timeout",
+  "steps_completed": {},
+  "details": "Analysis exceeded timeout of 600s",
+  "last_updated": "2025-07-18T22:36:23-06:00"
+}

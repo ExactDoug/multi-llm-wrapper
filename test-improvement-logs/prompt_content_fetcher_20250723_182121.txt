@@ -1,0 +1,88 @@
+# Test Improvement Analysis: content_fetcher
+
+You are conducting a systematic 11-step test improvement analysis for the test file: tests/brave_search_aggregator/test_content_fetcher.py
+
+## Your Task
+Perform comprehensive analysis following this exact 11-step process:
+
+### Step 1: Execute Existing Test
+- Run the current test and document its pass/fail status
+- Capture any error messages, warnings, or output
+- Note execution time and resource usage
+- Document current test behavior and reliability
+
+### Step 2: Document Test Results  
+- Provide detailed analysis of test execution results
+- Document any issues found during execution
+- Note dependencies, requirements, or setup needed
+- Assess current test stability and consistency
+
+### Step 3: Compare with RAG Analysis
+- Read and analyze the corresponding RAG research file: tests/documentation/rag-research/brave-search/test_content_fetcher_rag_analysis.md
+- Compare current test state with RAG analysis findings
+- Identify alignment or discrepancies between current state and analysis
+- Note which RAG recommendations are already implemented vs. missing
+
+### Step 4: Determine Improvement Scope
+- Based on RAG analysis, determine what needs improvement:
+  - Test code modifications needed
+  - Source code modifications needed  
+  - Both test and source code changes
+- Provide clear rationale for the scope determination
+
+### Step 5: Explain Rationale
+- Provide detailed explanation for why changes are needed
+- Reference specific issues identified in steps 1-3
+- Connect recommendations to business value and quality improvements
+- Prioritize changes based on impact and effort
+
+### Step 6: Plan Test Modifications (if needed)
+- Detail specific test changes required
+- Assign complexity level: Low/Medium/High
+- Estimate implementation effort in hours
+- Assess likelihood of new issues or unexpected problems
+- Provide specific code examples of improvements needed
+
+### Step 7: Plan Code Modifications (if needed)  
+- Detail specific source code changes required
+- Assign complexity level: Low/Medium/High
+- Estimate implementation effort in hours
+- Assess likelihood of new issues or unexpected problems
+- Identify potential breaking changes or compatibility issues
+
+### Step 8: Assess Cross-Test Impact
+- Review other tests that might be affected by proposed code changes
+- Identify tests that may need updates due to code modifications
+- Map dependencies and potential ripple effects
+- Recommend coordination strategy for related changes
+
+### Step 9: Generate Implementation Plan
+- Create step-by-step implementation roadmap
+- Define testing and validation approach
+- Specify rollback strategy if needed
+- Include quality gates and checkpoints
+
+### Step 10: Create Risk Mitigation Strategy
+- Identify potential risks in implementation
+- Provide specific mitigation strategies for each risk
+- Define early warning indicators
+- Plan contingency approaches
+
+### Step 11: Document Comprehensive Findings
+- Summarize all analysis in structured format
+- Provide executive summary of recommendations
+- Include effort estimates and timeline
+- Create actionable next steps with owners
+
+## Output Format
+Provide your analysis in structured markdown format with clear sections for each step. Include specific code examples, effort estimates, and actionable recommendations.
+
+## Context Files
+- Test file location: tests/brave_search_aggregator/test_content_fetcher.py
+- RAG analysis location: tests/documentation/rag-research/brave-search/test_content_fetcher_rag_analysis.md
+- Working directory: /mnt/c/dev/projects/github/multi-llm-wrapper
+
+## Quality Expectations
+IMPORTANT: This analysis must be comprehensive and detailed. Write AT LEAST 800 words with specific technical details, code examples, metrics, and actionable recommendations. Do not provide a brief summary - provide a thorough technical analysis covering all 11 steps in detail.
+
+Begin your comprehensive 11-step analysis now.
