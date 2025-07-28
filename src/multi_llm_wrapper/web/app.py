@@ -28,15 +28,8 @@ app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
 templates = Jinja2Templates(directory=str(templates_dir))
 
 # Initialize LLM service
-llm_service = None
-startup_error = None
-
-try:
-    llm_service = LLMService()
-except ValueError as e:
-    startup_error = str(e)
-    logger.warning(f"LLM Service initialization failed: {startup_error}")
-    # Server continues without LLM service
+# Service initialization always succeeds now - individual providers handle their own errors
+llm_service = LLMService()
 
 @app.get("/", response_class=HTMLResponse)
 async def root(request: Request):
@@ -60,9 +53,9 @@ async def apple_touch_icon(suffix: str = ""):
 async def get_status():
     """Report service availability status"""
     return {
-        "llm_service_available": llm_service is not None,
-        "error": startup_error,
-        "message": "LLM service not configured. Please set API keys in .env file." if startup_error else "Ready"
+        "llm_service_available": True,
+        "error": None,
+        "message": "Service ready - individual providers available based on API key configuration"
     }
 
 # Helper function for error streaming
@@ -78,15 +71,6 @@ async def stream_endpoint(
     session_id: str = Query(None)
 ):
     """Endpoint for streaming LLM responses."""
-    # Add service availability check
-    if not llm_service:
-        return StreamingResponse(
-            error_generator(
-                f"LLM service is not available. {startup_error or 'Please configure API keys in .env file.'}"
-            ),
-            media_type="text/event-stream"
-        )
-    
     # Generate session ID if not provided
     if not session_id:
         session_id = str(uuid4())
@@ -99,12 +83,6 @@ async def stream_endpoint(
 @app.get("/synthesize/{session_id}")
 async def synthesize_endpoint(session_id: str):
     """Endpoint for synthesizing responses."""
-    if not llm_service:
-        return StreamingResponse(
-            error_generator("LLM service is not available. Please configure API keys."),
-            media_type="text/event-stream"
-        )
-    
     if not session_id:
         raise HTTPException(status_code=400, detail="Session ID is required")
         

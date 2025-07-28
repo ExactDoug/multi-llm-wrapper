@@ -127,8 +127,13 @@ class WrapperConfig:
             "brave_search": self.brave_search
         }
 
+        # Allow service to start even if default provider key is missing
+        # Individual providers will handle their own errors when queried
         if not provider_configs[self.default_provider].api_key:
-            raise ValueError(f"{self.default_provider.capitalize()} API key not found in environment or configuration")
+            import logging
+            logging.getLogger(__name__).warning(
+                f"{self.default_provider.capitalize()} API key not found - default provider unavailable"
+            )
 
     def copy(self):
         """Create a deep copy of the configuration"""
