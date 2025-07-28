@@ -28,7 +28,15 @@ app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
 templates = Jinja2Templates(directory=str(templates_dir))
 
 # Initialize LLM service
-llm_service = LLMService()
+llm_service = None
+startup_error = None
+
+try:
+    llm_service = LLMService()
+except ValueError as e:
+    startup_error = str(e)
+    logger.warning(f"LLM Service initialization failed: {startup_error}")
+    # Server continues without LLM service
 
 @app.get("/", response_class=HTMLResponse)
 async def root(request: Request):
@@ -48,6 +56,21 @@ async def apple_touch_icon(suffix: str = ""):
     default_file = static_dir / 'apple-touch-icon.png'
     return FileResponse(specific_file if specific_file.exists() else default_file)
 
+@app.get("/api/status")
+async def get_status():
+    """Report service availability status"""
+    return {
+        "llm_service_available": llm_service is not None,
+        "error": startup_error,
+        "message": "LLM service not configured. Please set API keys in .env file." if startup_error else "Ready"
+    }
+
+# Helper function for error streaming
+async def error_generator(message: str):
+    """Generate error message in streaming format"""
+    yield f"data: {json.dumps({'type': 'error', 'message': message, 'code': 'SERVICE_UNAVAILABLE'})}\n\n"
+    yield f"data: {json.dumps({'type': 'done'})}\n\n"
+
 @app.get("/stream/{llm_index}")
 async def stream_endpoint(
     llm_index: int,
@@ -55,6 +78,15 @@ async def stream_endpoint(
     session_id: str = Query(None)
 ):
     """Endpoint for streaming LLM responses."""
+    # Add service availability check
+    if not llm_service:
+        return StreamingResponse(
+            error_generator(
+                f"LLM service is not available. {startup_error or 'Please configure API keys in .env file.'}"
+            ),
+            media_type="text/event-stream"
+        )
+    
     # Generate session ID if not provided
     if not session_id:
         session_id = str(uuid4())
@@ -67,6 +99,12 @@ async def stream_endpoint(
 @app.get("/synthesize/{session_id}")
 async def synthesize_endpoint(session_id: str):
     """Endpoint for synthesizing responses."""
+    if not llm_service:
+        return StreamingResponse(
+            error_generator("LLM service is not available. Please configure API keys."),
+            media_type="text/event-stream"
+        )
+    
     if not session_id:
         raise HTTPException(status_code=400, detail="Session ID is required")
         
